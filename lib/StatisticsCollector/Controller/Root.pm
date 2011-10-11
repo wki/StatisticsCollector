@@ -16,7 +16,7 @@ StatisticsCollector::Controller::Root - Root Controller for StatisticsCollector
 
 =head1 DESCRIPTION
 
-[enter your description here]
+A simple collector for sensor measures
 
 =head1 METHODS
 
