@@ -19,13 +19,20 @@ case of unwanted values or lack of measures.
 
 * create filters in dashboard pages to shrink down all data presented
 
+
+
 ## Ideas for URIs ##
+
+### REST-like thing for delivering/querying measures ###
 
 * GET /sensor/ `<domain/location/sensor>`
   get latest value and timestamp for this sensor
 
 * POST /sensor/ `<domain/location/sensor>`
   add a value (creating the sensor if not yet present)
+
+
+### User interface ###
 
 * GET /
   redirects to /dashboard

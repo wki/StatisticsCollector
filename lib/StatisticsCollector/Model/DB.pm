@@ -7,7 +7,7 @@ __PACKAGE__->config(
     schema_class => 'StatisticsCollector::Schema',
     
     connect_info => {
-        dsn => 'dbi:Pg:dbname=statistics',
+        dsn => $ENV{DSN} // 'dbi:Pg:dbname=statistics',
         user => 'postgres',
         password => '',
         pg_enable_utf8 => 1,
