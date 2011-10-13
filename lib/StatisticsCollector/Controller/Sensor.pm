@@ -73,11 +73,21 @@ http method POST: deliver a new measurement to a sensor
 sub default_POST {
     my ($self, $c, @path) = @_;
     
-    $self->status_created(
-        $c,
-        location => $c->req->uri->as_string,
-        entity => { bla => 'blubb' }
-    );
+    if (scalar(@path) != 3) {
+        $self->status_bad_request(
+            $c,
+            message => 'illegal syntax for sensor name',
+        );
+    } else {
+        ### TODO: create sensor if not yet present
+        ### TODO: add measure
+        
+        $self->status_created(
+            $c,
+            location => $c->req->uri->as_string,
+            entity => { bla => 'blubb' }
+        );
+    }
 }
 
 
