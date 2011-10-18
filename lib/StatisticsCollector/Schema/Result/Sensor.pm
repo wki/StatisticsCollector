@@ -18,6 +18,7 @@ unique_column name => {
 };
 
 has_many measures => 'StatisticsCollector::Schema::Result::Measure', 'sensor_id';
+might_have latest_measure => 'StatisticsCollector::Schema::Result::LatestMeasure', 'sensor_id';
 
 sub add_measure {
     my ($self, $value) = @_;

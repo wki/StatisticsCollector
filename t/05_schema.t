@@ -9,38 +9,43 @@ use Test::DBIx::Class;
 # ensure DB is empty
 is Sensor->count, 0, 'no records in sensor table';
 
+my $sensor;
+my $sensor2;
 
-# add a sensor
-ok my $sensor = Sensor->find_or_create({name => 'erlangen/keller/temperatur'}),
-    'find or create sensor';
-is_result $sensor;
-is_fields [qw(sensor_id name)], $sensor, [1, 'erlangen/keller/temperatur'],
-    'sensor fields look good';
-is Sensor->count, 1, '1 record in sensor table';
+# add some sensors
+{
+    # add a sensor for the first time
+    ok $sensor = Sensor->find_or_create({name => 'erlangen/keller/temperatur'}),
+        'find or create sensor';
+    is_result $sensor;
+    is_fields [qw(sensor_id name)], $sensor, [1, 'erlangen/keller/temperatur'],
+        'sensor fields look good';
+    is Sensor->count, 1, '1 record in sensor table';
+    
+    
+    # add same sensor name
+    undef $sensor;
+    ok $sensor = Sensor->find_or_create({name => 'erlangen/keller/temperatur'}),
+        'find or create sensor 2';
+    is_result $sensor;
+    is_fields [qw(sensor_id name)], $sensor, [1, 'erlangen/keller/temperatur'],
+        'sensor 2 fields look good';
+    is Sensor->count, 1, 'still 1 record in sensor table';
+    
+    
+    # add another sensor name
+    ok $sensor2 = Sensor->find_or_create({name => 'erlangen/garage/temperatur'}),
+        'find or create sensor 3';
+    is_result $sensor2;
+    is_fields [qw(sensor_id name)], $sensor2, [2, 'erlangen/garage/temperatur'],
+        'sensor 3 fields look good';
+    is Sensor->count, 2, '2 records in sensor table';
+    
+    
+    is Measure->count, 0, 'no records in measure table';
+}
 
-
-# add same sensor name
-undef $sensor;
-ok $sensor = Sensor->find_or_create({name => 'erlangen/keller/temperatur'}),
-    'find or create sensor 2';
-is_result $sensor;
-is_fields [qw(sensor_id name)], $sensor, [1, 'erlangen/keller/temperatur'],
-    'sensor 2 fields look good';
-is Sensor->count, 1, 'still 1 record in sensor table';
-
-
-# add another sensor name
-ok my $sensor2 = Sensor->find_or_create({name => 'erlangen/garage/temperatur'}),
-    'find or create sensor 3';
-is_result $sensor2;
-is_fields [qw(sensor_id name)], $sensor2, [2, 'erlangen/garage/temperatur'],
-    'sensor 3 fields look good';
-is Sensor->count, 2, '2 records in sensor table';
-
-
-is Measure->count, 0, 'no records in measure table';
-
-# add a measure
+# add measures
 {
     my $test_time = DateTime->new(
         year       => 2009, month      => 10, day        => 11,
@@ -131,6 +136,13 @@ is Measure->count, 0, 'no records in measure table';
               },
         'measure 4 fields look good';
     is Measure->count, 2, '2 records in measure table';
+    
+    ### TODO: check latest measure
+}
+
+# add some alarms and see if latest measure reports them
+{
+    my $x;
 }
 
 done_testing;

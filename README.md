@@ -19,6 +19,11 @@ case of unwanted values or lack of measures.
 
 * create filters in dashboard pages to shrink down all data presented
 
+* DB Schema:
+
+  $sensor->latest_measure->xxx_value
+  $sensor->latest_measure->xxx_alarm
+  $sensor->latest_measure->has_alarm
 
 
 ## Ideas for URIs ##

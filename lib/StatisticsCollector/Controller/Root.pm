@@ -2,6 +2,8 @@ package StatisticsCollector::Controller::Root;
 use Moose;
 use namespace::autoclean;
 
+use mro 'dfs';
+
 BEGIN { extends 'Catalyst::Controller' }
 
 #
@@ -29,8 +31,13 @@ The root page (/)
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
+    
     my $result = $c->model('DB::Sensor')->find(1)->name;
-    $c->response->body( $result );
+    $c->response->body( 
+        join(' --> ', @{mro::get_linear_isa(ref $c)}) . "\n" . 
+        join(' --> ', @{mro::get_linear_isa(ref $self)}) . "\n" . 
+        
+        $result );
 }
 
 =head2 default
