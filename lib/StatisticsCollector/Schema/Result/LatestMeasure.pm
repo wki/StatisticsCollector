@@ -1,13 +1,13 @@
 package StatisticsCollector::Schema::Result::LatestMeasure;
 use DBIx::Class::Candy 
-    -components => [qw(InflateColumn::DateTime)],
+    # -components => [qw(InflateColumn::DateTime)],
     -base => 'StatisticsCollector::Schema::Result::Measure';
 
 __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
 table 'virtual_latest_measure';
 
-# columns defined in base class, except:
+# all columns defined in base class, plus:
 
 column measure_age_alarm => {
     data_type => 'boolean',
@@ -39,13 +39,13 @@ __PACKAGE__->result_source_instance->view_definition(q{
           from measure
           group by sensor_id) sm
          left join (select m.measure_id,
-                           /* we only have one measure, but it looks better to use the proper aggregates */
-                           min(m.min_value)   as min_value,
-                           max(m.max_value)   as max_value,
-                           sum(m.sum_value)   as sum_value,
-                           sum(m.nr_values)   as nr_values,
-                           min(m.starting_at) as starting_at,
-                           max(m.ending_at)   as ending_at,
+                           /* use of aggregate functions needed here */
+                           min(distinct m.min_value)   as min_value,
+                           max(distinct m.max_value)   as max_value,
+                           min(distinct m.sum_value)   as sum_value,
+                           max(distinct m.nr_values)   as nr_values,
+                           min(distinct m.starting_at) as starting_at,
+                           max(distinct m.ending_at)   as ending_at,
                            
                            /* aggregate alarm conditions */
                            sum(case when ac.max_measure_age is not null

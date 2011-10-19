@@ -46,7 +46,7 @@ column max_value_lt => {
 column severity_level => {
     data_type => 'int',
     is_nullable => 0,
-    # default_value => 200,
+    default_value => 200,
 };
 
 1;
