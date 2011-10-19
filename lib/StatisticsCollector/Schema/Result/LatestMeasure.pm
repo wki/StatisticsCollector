@@ -74,10 +74,10 @@ __PACKAGE__->result_source_instance->view_definition(q{
                          left join alarm_condition ac on (s.name like ac.sensor_mask)
                     group by m.measure_id
                     /*
-                        !!! TBD: do we need a prio? 
-                                 is one alarm more important than an other?
+                        TODO: do we need a prio? 
+                        TODO: is one alarm more important than an other?
+                    order by m.measure_id, ac.severity_level desc
                     */
-                    -- order by m.measure_id, ac.severity_level desc
                    ) m on (sm.latest_measure_id = m.measure_id)
 });
 
