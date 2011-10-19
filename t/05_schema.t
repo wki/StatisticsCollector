@@ -11,6 +11,15 @@ is Sensor->count, 0, 'no records in sensor table';
 
 my ($sensor1, $sensor2, $sensor3);
 
+# today's times are used. We simply assume that our DB is also operating in our local time zone
+# t2 = current hour - 2, t1 = current hour - 1, t0 = current hour, ta = current hour + 1
+my $now       = DateTime->now(time_zone => 'local');
+my $test_date = $now->clone->truncate(to => 'day');
+my $t2 = $now->clone->truncate(to => 'hour')->subtract(hours => 2);
+my $t1 = $now->clone->truncate(to => 'hour')->subtract(hours => 1);
+my $t0 = $now->clone->truncate(to => 'hour');
+my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
+
 # add some sensors: 1=erlangen/keller/temperatur, 2=erlangen/garage/temperatur, 3=dallas/pool/temperatur
 {
     # add a sensor for the first time
@@ -52,15 +61,6 @@ my ($sensor1, $sensor2, $sensor3);
 
 # add measures s1: 2 measures t2, t1 / s2: 1 measure: t1 / s3: 1 measure: t0
 {
-    # today's times are used. We simply assume that our DB is also operating in our local time zone
-    # t2 = current hour - 2 hours, t1 = current hour - 1 hour, t0 = current hour
-    my $now       = DateTime->now(time_zone => 'local');
-    my $test_date = $now->clone->truncate(to => 'day');
-    my $t2 = $now->clone->truncate(to => 'hour')->subtract(hours => 2);
-    my $t1 = $now->clone->truncate(to => 'hour')->subtract(hours => 1);
-    my $t0 = $now->clone->truncate(to => 'hour');
-    my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
-    
     # this time might get changed during tests!
     my $test_time = $t2->clone->set(minute => 13, second => 14);
 
@@ -165,17 +165,17 @@ my ($sensor1, $sensor2, $sensor3);
         lives_ok { $measure = $sensor1->latest_measure } 'sensor 1 latest_measure lives';
         is_fields $measure,
                   {
-                      sensor_id   => 1,
-                      min_value   => 13,
-                      max_value   => 13,
-                      sum_value   => 13,
-                      nr_values   => 1,
-                      starting_at => $t1,
-                      ending_at   => $t0,
-                      max_severity_level => undef,
-                      max_value_lt_alarm => 0,
-                      measure_age_alarm => 0,
-                      min_value_gt_alarm => 0,
+                      sensor_id                    => 1,
+                      min_value                    => 13,
+                      max_value                    => 13,
+                      sum_value                    => 13,
+                      nr_values                    => 1,
+                      starting_at                  => $t1,
+                      ending_at                    => $t0,
+                      max_severity_level           => undef,
+                      max_value_lt_alarm           => 0,
+                      measure_age_alarm            => 0,
+                      min_value_gt_alarm           => 0,
                       nr_matching_alarm_conditions => 0,
                   },
             'sensor 1 latest_measure fields look good';
@@ -234,10 +234,256 @@ my ($sensor1, $sensor2, $sensor3);
 
 # add some alarms and see if latest measure reports them
 {
-    # sensor 1: 2 measures, 1 and 2 hours age, latest: value = 13 .. 13
-    # sensor 2: 1 measure,  1 hour age,        latest: value = 26 .. 26
-    # sensor 3: 1 measure,  0 hour age,        latest: value = 42 .. 42
+    # 1: erlangen/keller/temperatur 2 measures, 1 and 2 hours age, latest: value = 13 .. 13
+    # 2: erlangen/garage/temperatur 1 measure,  1 hour age,        latest: value = 26 .. 26
+    # 3: dallas/pool/temperatur     1 measure,  0 hour age,        latest: value = 42 .. 42
+    
+    is AlarmCondition->count, 0, 'no alarm conditions defined yet';
+    
     my $alarm;
+    my %sensor1_measure = (
+        sensor_id   => 1,
+        min_value   => 13,
+        max_value   => 13,
+        sum_value   => 13,
+        nr_values   => 1,
+        starting_at => $t1,
+        ending_at   => $t0,
+    );
+    
+    # a mask-non-matching alarm does neither show up not warn
+    $alarm = AlarmCondition->create(
+        {
+            sensor_mask => 'non/sense/mask', # should never match
+            severity_level => 500,
+        }
+    );
+    is AlarmCondition->count, 1, 'one alarm conditions defined';
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 0,
+              },
+        'nonsense alarm is not seen';
+    
+    # a mask-matching but null-valued alarm shows but does not warn
+    $alarm->update( { sensor_mask => 'erlangen/keller/temperatur' } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'fully masked alarm is seen';
+
+    $alarm->update( { sensor_mask => '%/keller/temperatur' } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'begin-masked alarm is seen';
+
+    $alarm->update( { sensor_mask => 'erlangen/%/temperatur' } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'mid-masked alarm is seen';
+
+    $alarm->update( { sensor_mask => 'erlangen/keller/%' } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'end-masked alarm is seen';
+    
+    # a mask-matching and out-of-range-valued alarm shows but does not warn
+    $alarm->update( 
+        { 
+            sensor_mask => 'erlangen/keller/temperatur',
+            max_measure_age => 100,
+            min_value_gt    => -1000,
+            max_value_lt    => 1000,
+        }
+    );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'in-range alarm is seen';
+
+    # min-gt warning
+    $alarm->update( 
+        { 
+            sensor_mask => 'erlangen/keller/temperatur',
+            max_measure_age => 100,
+            min_value_gt    => 20,
+            max_value_lt    => 1000,
+        }
+    );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => 500,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 1,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'min-gt alarm is fired for values outside range';
+
+    $alarm->update( { min_value_gt => 14, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => 500,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 1,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'min-gt alarm is fired for edge values outside range';
+
+    $alarm->update( { min_value_gt => 13, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => 500,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 1,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'min-gt alarm is fired for equal values';
+    
+    $alarm->update( { min_value_gt => 12, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'min-gt alarm is not fired for edge value inside range';
+
+    # max-lt warning
+    $alarm->update( 
+        { 
+            sensor_mask => 'erlangen/keller/temperatur',
+            max_measure_age => 100,
+            min_value_gt    => -1000,
+            max_value_lt    => 5,
+        }
+    );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => 500,
+                  max_value_lt_alarm           => 1,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'max-lt alarm is fired for values outside range';
+
+    $alarm->update( { max_value_lt => 12, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => 500,
+                  max_value_lt_alarm           => 1,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'max-lt alarm is fired for edge values outside range';
+
+    $alarm->update( { max_value_lt => 13, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => 500,
+                  max_value_lt_alarm           => 1,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'max-lt alarm is fired for equal values';
+    
+    $alarm->update( { max_value_lt => 14, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'max-lt alarm is not fired for edge value inside range';
+    
+    # age warning
+    $alarm->update( 
+        { 
+            sensor_mask => 'erlangen/keller/temperatur',
+            max_measure_age => 2,
+            min_value_gt    => -1000,
+            max_value_lt    => 1000,
+        }
+    );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => undef,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 0,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'age alarm is not fired for ages in range';
+
+    $alarm->update( { max_measure_age => 1 } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  max_severity_level           => 500,
+                  max_value_lt_alarm           => 0,
+                  measure_age_alarm            => 1,
+                  min_value_gt_alarm           => 0,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'age alarm is fired for ages out of range';
+    
+    # multiple alarms work, severity is max
 }
 
 done_testing;

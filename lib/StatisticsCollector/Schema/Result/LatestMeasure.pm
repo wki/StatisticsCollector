@@ -39,7 +39,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
           from measure
           group by sensor_id) sm
          left join (select m.measure_id,
-                           -- we only have one measure, but it looks better to use the proper aggregates
+                           /* we only have one measure, but it looks better to use the proper aggregates */
                            min(m.min_value)   as min_value,
                            max(m.max_value)   as max_value,
                            sum(m.sum_value)   as sum_value,
@@ -47,25 +47,25 @@ __PACKAGE__->result_source_instance->view_definition(q{
                            min(m.starting_at) as starting_at,
                            max(m.ending_at)   as ending_at,
                            
-                           -- aggregate alarm conditions
+                           /* aggregate alarm conditions */
                            sum(case when ac.max_measure_age is not null
-                                         and age(m.starting_at, now()) > (interval '1 hour') * ac.max_measure_age
+                                         and age(now(), m.starting_at) > (interval '1 hour') * ac.max_measure_age
                                         then 1
                                         else 0 end) > 0 as measure_age_alarm,
                            sum(case when ac.min_value_gt is not null
-                                         and m.min_value > ac.min_value_gt
+                                         and m.min_value <= ac.min_value_gt
                                         then 1
                                         else 0 end) > 0 as min_value_gt_alarm,
                            sum(case when ac.max_value_lt is not null
-                                         and m.max_value < ac.max_value_lt
+                                         and m.max_value >= ac.max_value_lt
                                         then 1
                                         else 0 end) > 0 as max_value_lt_alarm,
                            max(case when (ac.max_measure_age is not null
-                                          and age(m.starting_at, now()) > (interval '1 hour') * ac.max_measure_age)
+                                          and age(now(), m.starting_at) > (interval '1 hour') * ac.max_measure_age)
                                       or (ac.min_value_gt is not null
-                                          and m.min_value > ac.min_value_gt)
+                                          and m.min_value <= ac.min_value_gt)
                                       or (ac.max_value_lt is not null
-                                         and m.max_value < ac.max_value_lt)
+                                         and m.max_value >= ac.max_value_lt)
                                         then ac.severity_level
                                         else null end) as max_severity_level,
                            count(distinct ac.alarm_condition_id) as nr_matching_alarm_conditions

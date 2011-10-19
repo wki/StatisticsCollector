@@ -4,7 +4,7 @@ use warnings;
 use aliased 'DBIx::Class::DeploymentHandler' => 'DH';
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use Statistics::Schema;
+use StatisticsCollector::Schema;
 
 my $schema = StatisticsCollector::Schema->connect(
     'dbi:Pg:dbname=statistics;host=127.0.0.1',
