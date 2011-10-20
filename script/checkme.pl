@@ -10,9 +10,9 @@ use POSIX 'strftime';
 
 my $FORMAT = '%Y-%m-%d %H:%M:%S %z (%Z)';
 
-my $schema = StatisticsCollector::Schema->connect('dbi:Pg:dbname=statistics', 'postgres', '');
+my $schema = StatisticsCollector::Schema->connect('dbi:Pg:dbname=statistics_test', 'postgres', '');
 
-my $sensor = $schema->resultset('Sensor')->find(1);
+my $sensor = $schema->resultset('Sensor')->find(1, {prefetch => 'latest_measure'});
 my $latest_measure = $sensor->latest_measure;
 say "Latest: ${\$latest_measure->starting_at->hms}, " .
     "min: ${\$latest_measure->min_value}, " .

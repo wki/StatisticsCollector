@@ -31,13 +31,7 @@ The root page (/)
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
-    
-    my $result = $c->model('DB::Sensor')->find(1)->name;
-    $c->response->body( 
-        join(' --> ', @{mro::get_linear_isa(ref $c)}) . "\n" . 
-        join(' --> ', @{mro::get_linear_isa(ref $self)}) . "\n" . 
-        
-        $result );
+    $c->res->redirect( $c->uri_for_action('dashboard/index') );
 }
 
 =head2 default

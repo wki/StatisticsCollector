@@ -5,6 +5,6 @@ use Test::More;
 
 use Catalyst::Test 'StatisticsCollector';
 
-ok( request('/')->is_success, 'Request should succeed' );
+ok( action_redirect('/', '/ redirects') );
 
 done_testing();

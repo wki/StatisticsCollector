@@ -17,6 +17,9 @@ requires 'Catalyst::Action::REST';
 requires 'Moose';
 requires 'namespace::autoclean';
 requires 'Config::General';
+requires 'Proc::Class';
+requires 'Catalyst::View::ByCode';
+requries 'Catalyst::Controller::Combine';
 
 test_requires 'Test::More' => '0.88';
 test_requires 'Test::Exception';
