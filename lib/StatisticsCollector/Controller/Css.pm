@@ -27,7 +27,12 @@ __PACKAGE__->config(
         # assumes that all images for jQuery UI reside under static/images
         # 'jquery-ui' => [ qr'url(images/' => 'url(/static/images/' ],
         '*' => [
+            # fix a buggy entry that crashes sass
             qr'rgba[(]0,0,0,33[)]' => 'rgba(0,0,0,.33)',
+            
+            # now only module/*.css have skin/ references.
+            # generally this is really bad
+            qr'url[(]skin/' => 'url(/static/css/core/module/skin/',
         ],
     },
     #

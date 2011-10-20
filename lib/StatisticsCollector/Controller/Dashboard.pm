@@ -24,7 +24,18 @@ Presents a dashboard page for the regular user
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
+    my %search; # to be filled by search-params
     
+    $c->stash->{sensors} = [
+        $c->model('DB::Sensor')
+          ->search(
+              \%search,
+              {
+                  prefetch => 'latest_measure',
+                  order_by => 'me.name',
+              })
+          ->all
+    ];
 }
 
 

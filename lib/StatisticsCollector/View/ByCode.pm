@@ -14,7 +14,7 @@ __PACKAGE__->config(
     # wrapper => 'wrapper.pl',
     #
     # # specify packages to use in every template
-    # include => [ qw(My::Package::Name Other::Package::Name) ]
+    include => [ qw(StatisticsCollector::TemplateBlocks) ]
 );
 
 =head1 NAME
