@@ -33,6 +33,9 @@ sub index :Path :Args(0) {
               {
                   prefetch => 'latest_measure',
                   order_by => 'me.name',
+                  # # wow! paging works
+                  # page => 1,
+                  # rows => 5
               })
           ->all
     ];

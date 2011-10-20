@@ -45,6 +45,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
                            min(distinct m.sum_value)   as sum_value,
                            max(distinct m.nr_values)   as nr_values,
                            min(distinct m.starting_at) as starting_at,
+                           max(distinct m.updated_at)  as updated_at,
                            max(distinct m.ending_at)   as ending_at,
                            
                            /* aggregate alarm conditions */

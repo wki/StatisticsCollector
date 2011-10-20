@@ -31,20 +31,29 @@ template {
                                         }
                                     };
                                 };
-                                tcol { $latest 
-                                         ? $latest->starting_at->strftime('%Y-%m-%d %H:%M')
-                                         : '-'
+                                tcol {
+                                    class '+negative' if $latest && $latest->measure_age_alarm;
+                                    
+                                    $latest 
+                                        ? $latest->updated_at->strftime('%Y-%m-%d %H:%M')
+                                        : '-'
                                 };
-                                tcol { $latest 
-                                         ? sprintf('%d / %d / %d',
+                                tcol { 
+                                    class '+negative'
+                                        if $latest 
+                                           && ($latest->min_value_gt_alarm || $latest->max_value_lt_alarm);
+                                    
+                                    $latest 
+                                        ? sprintf('%d / %d / %d',
                                                   $latest->min_value,
                                                   $latest->sum_value / $latest->nr_values,
                                                   $latest->max_value)
-                                         : '-'
+                                        : '-'
                                 };
-                                tcol { $latest
-                                         ? $latest->nr_values
-                                         : '-'
+                                tcol {
+                                    $latest
+                                        ? $latest->nr_values
+                                        : '-'
                                     
                                 };
                                 tcol.txtC {

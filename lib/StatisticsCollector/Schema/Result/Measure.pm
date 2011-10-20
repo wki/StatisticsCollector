@@ -1,5 +1,5 @@
 package StatisticsCollector::Schema::Result::Measure;
-use DBIx::Class::Candy -components => [qw(InflateColumn::DateTime)];
+use DBIx::Class::Candy -components => [qw(InflateColumn::DateTime TimeStamp)];
 use DateTime;
 
 table 'measure';
@@ -37,6 +37,12 @@ column nr_values => {
 column starting_at => {
     data_type => 'datetime', timezone => 'local',
     is_nullable => 0,
+};
+
+column updated_at => {
+    data_type => 'datetime', timezone => 'local',
+    is_nullable => 0,
+    set_on_create => 1, set_on_update => 1,
 };
 
 column ending_at => {

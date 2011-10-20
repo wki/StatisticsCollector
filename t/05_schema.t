@@ -66,6 +66,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
 
     no warnings 'redefine';
     local *DateTime::now = sub { return $test_time->clone };
+    local *DBIx::Class::TimeStamp::get_timestamp = sub { return $test_time->clone };
 
     # multiple measures within one hour reside in the same record
     {
@@ -80,6 +81,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       sum_value   => 42,
                       nr_values   => 1,
                       starting_at => $t2,
+                      updated_at  => $test_time,
                       ending_at   => $t1,
                   },
             'measure 1 fields look good';
@@ -97,6 +99,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       sum_value   => 52,
                       nr_values   => 2,
                       starting_at => $t2,
+                      updated_at  => $test_time,
                       ending_at   => $t1,
                   },
             'measure 2 fields look good';
@@ -113,6 +116,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       sum_value   => 112,
                       nr_values   => 3,
                       starting_at => $t2,
+                      updated_at  => $test_time,
                       ending_at   => $t1,
                   },
             'measure 3 fields look good';
@@ -132,6 +136,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       sum_value   => 13,
                       nr_values   => 1,
                       starting_at => $t1,
+                      updated_at  => $test_time,
                       ending_at   => $t0,
                   },
             'measure 4 fields look good';
@@ -151,6 +156,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       sum_value   => 26,
                       nr_values   => 1,
                       starting_at => $t1,
+                      updated_at  => $test_time,
                       ending_at   => $t0,
                   },
             'measure 5 fields look good';
@@ -171,6 +177,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       sum_value                    => 13,
                       nr_values                    => 1,
                       starting_at                  => $t1,
+                      updated_at                   => $test_time,
                       ending_at                    => $t0,
                       max_severity_level           => undef,
                       max_value_lt_alarm           => 0,
@@ -191,6 +198,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       sum_value                    => 26,
                       nr_values                    => 1,
                       starting_at                  => $t1,
+                      updated_at                   => $test_time,
                       ending_at                    => $t0,
                       max_severity_level           => undef,
                       max_value_lt_alarm           => 0,
@@ -221,6 +229,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       sum_value                    =>-42,
                       nr_values                    => 1,
                       starting_at                  => $t0,
+                      updated_at                   => $test_time,
                       ending_at                    => $ta,
                       max_severity_level           => undef,
                       max_value_lt_alarm           => 0,
@@ -248,6 +257,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         sum_value   => 13,
         nr_values   => 1,
         starting_at => $t1,
+        updated_at  => $t1->clone->set(minute => 0),
         ending_at   => $t0,
     );
     
