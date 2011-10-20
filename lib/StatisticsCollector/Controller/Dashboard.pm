@@ -19,6 +19,16 @@ Presents a dashboard page for the regular user
 
 =head2 index
 
+displays a list of measures, influenced by sort/filter criteria
+
+sort:            name of field to order by ("-" prefix for reverse)
+filter_name:     '%/%/whatever'
+filter_missing:  0/1 (w/o or w/ missing measures)
+filter_severity: 0 (OK) or number or number-number (errors w/severity level range)
+filter_age:      num - num
+page_nr:         1
+page_size:       default 25
+
 =cut
 
 sub index :Path :Args(0) {
@@ -26,19 +36,26 @@ sub index :Path :Args(0) {
 
     my %search; # to be filled by search-params
     
-    $c->stash->{sensors} = [
+    my $page_size = $c->req->params->{page_size} || 20;
+    
+    # testing:
+    $search{'me.name'} = { -like => '%/%/temperatur' };
+    
+    my $search_rs = 
         $c->model('DB::Sensor')
           ->search(
               \%search,
               {
                   prefetch => 'latest_measure',
                   order_by => 'me.name',
-                  # # wow! paging works
-                  # page => 1,
-                  # rows => 5
-              })
-          ->all
-    ];
+                  page => 1,
+                  rows => $page_size,
+              });
+    
+    $c->stash(
+        sensors => [ $search_rs->all ],
+        pager   => $search_rs->pager,
+    );
 }
 
 

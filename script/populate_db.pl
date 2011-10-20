@@ -76,5 +76,83 @@ $schema->populate(
                     { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
                       starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
                   ] },
+        
+        { name => 'kairo/keller/temperatur',
+          measures => [
+            { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+              starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+          ] },
+        { name => 'kairo/waschkueche/temperatur'  ,
+            measures => [
+              { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+            ] },
+        { name => 'kairo/heizung/temperatur'    ,
+              measures => [
+                { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                  starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+              ] },
+        { name => 'kairo/treppenhaus/temperatur'      ,
+                measures => [
+                  { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                    starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+                ] },
+        { name => 'kairo/hof/temperatur'        ,
+                  measures => [
+                    { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                      starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+                  ] },
+        
+        { name => 'monaco/keller/temperatur',
+          measures => [
+            { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+              starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+          ] },
+        { name => 'monaco/waschkueche/temperatur'  ,
+            measures => [
+              { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+            ] },
+        { name => 'monaco/heizung/temperatur'    ,
+              measures => [
+                { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                  starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+              ] },
+        { name => 'monaco/treppenhaus/temperatur'      ,
+                measures => [
+                  { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                    starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+                ] },
+        { name => 'monaco/hof/temperatur'        ,
+                  measures => [
+                    { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                      starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+                  ] },
+        
+        { name => 'berlin/keller/temperatur',
+          measures => [
+            { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+              starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+          ] },
+        { name => 'berlin/waschkueche/temperatur'  ,
+            measures => [
+              { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+            ] },
+        { name => 'berlin/heizung/temperatur'    ,
+              measures => [
+                { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                  starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+              ] },
+        { name => 'berlin/treppenhaus/temperatur'      ,
+                measures => [
+                  { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                    starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+                ] },
+        { name => 'berlin/hof/temperatur'        ,
+                  measures => [
+                    { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                      starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
+                  ] },
     ],
 );
