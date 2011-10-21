@@ -10,5 +10,4 @@ use StatisticsCollector::Controller::Js;
 # TODO: tests as soon as js is present
 ok 1;
 
-
 done_testing();

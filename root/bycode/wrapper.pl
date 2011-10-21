@@ -5,7 +5,8 @@ template {
     doctype 'html';
     boilerplate {
         head {
-            load Css => '/css/site.css';
+            load Css => 'site.css';
+            load Js  => 'site.js';
             title { stash->{title} // 'Statistics Collector' };
         };
         body {

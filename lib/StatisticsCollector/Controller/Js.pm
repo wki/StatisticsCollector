@@ -14,23 +14,12 @@ __PACKAGE__->config(
     # extension => 'js',
     #
     #   specify dependencies (without file extensions)
-    # depend => {
-    # aid for the prototype users (site.js is main file)
-    #   --> place all .js files directly into root/static/js!
-    #     scriptaculous => 'prototype',
-    #     builder       => 'scriptaculous',
-    #     effects       => 'scriptaculous',
-    #     dragdrop      => 'effects',
-    #     slider        => 'scriptaculous',
-    #     site          => 'dragdrop',
-    #
-    # aid for the jQuery users (site.js is main file)
-    #   --> place all .js files including version-no directly into root/static/js!
+    depend => {
     #     'jquery.metadata'     => 'jquery-1.6.2'
     #     'jquery.form-2.36'    => 'jquery-1.6.2'
     #     'jquery.validate-1.6' => [qw(jquery.form-2.36 jquery.metadata)]
-    #     site                  => [qw(jquery.validate-1.6 jquery-ui-1.8.1)]
-    # },
+        site                  => [ qw(jquery) ],
+    },
     #
     #   optionally specify replacements to get done
     # replace => {

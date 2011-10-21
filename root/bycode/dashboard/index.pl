@@ -2,34 +2,115 @@
 # dashboard / index
 #
 
+sub _construct_filter_params {
+    my %args = @_;
+    
+    my %page_params = 
+        map { $_ => c->req->params->{$_} }
+        grep { m{\A(?:page|filter|sort)}xms }
+        keys %{c->req->params};
+    
+    foreach my $key (keys %args) {
+        my ($operation, $name) = ($key =~ m{\A ([-+]?) (.*) \z}xms);
+        $operation //= '';
+        c->log->debug("operation: $operation, key: $key, name: $name");
+        if ($operation eq '-' || !defined $args{$name}) {
+            delete $page_params{$name};
+        } elsif ($operation eq '+') {
+            if (exists($page_params{$name})) {
+                my @x = ref $page_params{$name} ? @{$page_params{$name}} : $page_params{$name};
+                $page_params{$name} = [ @x, $args{$name} ];
+            } else {
+                $page_params{$name} = $args{$name};
+            }
+        } else {
+            $page_params{$name} = $args{$name};
+        }
+    }
+    
+    return \%page_params;
+}
+
+sub create_query_params {
+    my $page_params = _construct_filter_params(@_);
+    
+    ### TODO: this is not yet right. Array-refs must yield repeating fields
+    return $page_params;
+}
+
+sub create_hidden_fields {
+    my $page_params = _construct_filter_params(@_);
+    
+    while (my ($name, $value) = each(%{$page_params})) {
+        input(type => 'hidden', name => $name, value => $value);
+    }
+}
+
 sub show_filters {
-    span { 'no filters yet' };
+    my @filters;
+    
+    foreach my $param (sort grep { m{\A filter_}xms } keys(%{c->req->params})) {
+        my $name = $param; $name =~ s{\A filter_}{}xms;
+        push @filters,
+             {
+                 name  => $name,
+                 param => $param,
+                 value => c->req->params->{$param},
+                 uri   => c->uri_for_action('dashboard/index',
+                                            create_query_params($param => undef)),
+             };
+    }
+    if (@filters) {
+        foreach my $filter (@filters) {
+            span.mrl {
+                print OUT "$filter->{name}: $filter->{value}";
+                a.mls(href => $filter->{uri}, title => 'remove filter') { 'X' };
+            };
+        }
+    } else {
+        span { 'no filters yet' };
+    }
 }
 
 sub show_pager {
     my $pager = stash->{pager};
-    return if $pager->last_page < 2;
+    # return if $pager->last_page < 2;
     
-    choice(name => 'page_nr') {
-        foreach my $i (1 .. $pager->last_page) {
-            option(value => $i) {
-                attr selected => 1 if $i == $pager->current_page;
-                "page $i of ${\$pager->last_page}"
-            };
-        }
+    form (action => c->uri_for_action('dashboard/index'), method => 'GET') {
+        create_hidden_fields(page_nr => undef, page_size => undef);
+        choice._submit_on_change(name => 'page_size') {
+            foreach my $size (10,25,50,100) {
+                option(value => $size) {
+                    attr selected => 1 if $size == $pager->entries_per_page;
+                    $size;
+                };
+            }
+        };
+        choice._submit_on_change(name => 'page_nr') {
+            foreach my $i (1 .. $pager->last_page) {
+                option(value => $i) {
+                    attr selected => 1 if $i == $pager->current_page;
+                    "page $i of ${\$pager->last_page}"
+                };
+            }
+        };
     };
+}
+
+sub sortable_header {
+    my ($field, $name) = @_;
 }
 
 sub show_sensor_table {
     table.txtL {
         thead {
             trow {
-                th(width => '45%') { 'Sensor' };
-                th(width => '20%') { 'Latest Measure' };
-                th(width => '10%') { 'value' };
+                th(width => '45%') { sortable_header(name => 'Sensor') };
+                th(width => '20%') { sortable_header(latest => 'Latest Measure') };
+                th(width => '10%') { sortable_header(value => 'value') };
                 th(width => '15%') { 'min/avg/max' };
-                th(width => '5%') { '#' };
-                th(width => '5%') { '' };
+                th(width =>  '5%') { '#' };
+                th(width =>  '5%') { '' };
             };
         };
         tbody {
@@ -47,10 +128,15 @@ sub show_data_row {
     trow {
         tcol {
             ul.breadcrumb.mvs.mhn {
+                my $part_nr = 1;
                 foreach my $part (split qr{/}xms, $sensor->name) {
-                    li { 
-                        a(href => '#') { $part };
+                    li {
+                        a(href => c->uri_for_action('dashboard/index', 
+                                                    create_query_params("filter_name$part_nr" => $part))) { 
+                            $part
+                        };
                     };
+                    $part_nr++;
                 }
             };
         };

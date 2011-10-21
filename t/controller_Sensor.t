@@ -17,7 +17,9 @@ my $sensor;
 is Sensor->count, 0, 'initially no sensors in DB';
 lives_ok { $sensor = Sensor->create({name => 'abc/def/ghi'}) }
          'sensor created';
-is Sensor->count, 1, 'sensor created';
+lives_ok { Sensor->create({name => 'rst/uvw/xyz'}) }
+         'sensor created';
+is Sensor->count, 2, 'sensors created';
 
 my $dt = DateTime->new(
     year => 2010,
@@ -38,8 +40,12 @@ is Measure->count, 2, 'measures created';
 {
     is request(GET '/sensor')->code, 400,
        'query without sensor fails';
+    is request(GET '/sensor/xx/yy')->code, 400,
+       'query with unknown sensor fails';
     is request(GET '/sensor/xx/yy/zz')->code, 404,
        'query with unknown sensor fails';
+    is request(GET '/sensor/rst/uvw/xyz')->code, 204,
+       'query with sensor w/o data has no content-204';
 }
 
 # default response format is JSON
@@ -88,7 +94,7 @@ is Measure->count, 2, 'measures created';
         'save with too short sensor name fails';
 }
 
-# create new sensor
+# create new sensor : POST 1
 {
     my $dt = DateTime->new(
         year       => 2011, month      =>  1, day        => 28,
@@ -101,21 +107,21 @@ is Measure->count, 2, 'measures created';
     local *DBIx::Class::TimeStamp::get_timestamp = sub { return $dt->clone };
     
     is Sensor->search({ name => 'my/sensor/name' })->count, 0,
-       'sensor not known before POST';
+       'sensor not known before POST 1';
     
     my $response = request(POST '/sensor/my/sensor/name', [value => 42]);
     is $response->code, 201,
        'response code is 201-accepted';
     
-    is_deeply decode_json($response->content),
-              { sensor_id => 2, measure_id => 3,
-                latest_value => 42, min_value => 42, max_value => 42, nr_values => 1 },
-              'JSON Response looks good';
-    
     my $sensor_rs = Sensor->search({ name => 'my/sensor/name' });
     is $sensor_rs->count, 1,
-       'sensor is known after POST';
+       'sensor is known after POST 1';
     my $sensor = $sensor_rs->first;
+    
+    is_deeply decode_json($response->content),
+              { sensor_id => $sensor->id, measure_id => 3,
+                latest_value => 42, min_value => 42, max_value => 42, nr_values => 1 },
+              'JSON Response looks good 1';
     
     # check measure
     my $measure_rs = $sensor->search_related('measures');
@@ -136,7 +142,7 @@ is Measure->count, 2, 'measures created';
               'measure 1 fields look good';
 }
 
-# add measure same hour
+# add measure same hour : POST 2
 {
     my $dt = DateTime->new(
         year       => 2011, month      =>  1, day        => 28,
@@ -149,21 +155,21 @@ is Measure->count, 2, 'measures created';
     
     my $response = request(POST '/sensor/my/sensor/name', [value => 20]);
     is $response->code, 201,
-       'response code is 201-accepted';
-    
-    is_deeply decode_json($response->content),
-              { sensor_id => 2, measure_id => 3,
-                latest_value => 20, min_value => 20, max_value => 42, nr_values => 2 },
-              'JSON Response looks good';
+       'response code is 201-accepted 2';
     
     my $sensor_rs = Sensor->search({ name => 'my/sensor/name' });
     is $sensor_rs->count, 1,
        'sensor is only one after POST 2';
     my $sensor = $sensor_rs->first;
     
+    is_deeply decode_json($response->content),
+              { sensor_id => $sensor->id, measure_id => 3,
+                latest_value => 20, min_value => 20, max_value => 42, nr_values => 2 },
+              'JSON Response looks good';
+    
     # check measure
     my $measure_rs = $sensor->search_related('measures');
-    is $measure_rs->count, 1, 'one measure so far';
+    is $measure_rs->count, 1, 'one measure so far 2';
     
     is_fields $measure_rs->first,
               {
@@ -180,7 +186,7 @@ is Measure->count, 2, 'measures created';
               'measure 2 fields look good';
 }
 
-# add measure other hour
+# add measure other hour : POST 3
 {
     my $dt = DateTime->new(
         year       => 2011, month      =>  1, day        => 28,
@@ -193,23 +199,25 @@ is Measure->count, 2, 'measures created';
     
     my $response = request(POST '/sensor/my/sensor/name', [value => 2]);
     is $response->code, 201,
-       'response code is 201-accepted';
-    is Sensor->search({ name => 'my/sensor/name' })->count, 1,
-       'sensor is only one after POST 2';
-
-    is_deeply decode_json($response->content),
-              { sensor_id => 2, measure_id => 4,
-                latest_value => 2, min_value => 2, max_value => 2, nr_values => 1 },
-              'JSON Response looks good';
+       'response code is 201-accepted 3';
+    my $sensor_rs = Sensor->search({ name => 'my/sensor/name' });
+    is $sensor_rs->count, 1,
+       'sensor is only one after POST 3';
+    my $sensor = $sensor_rs->first;
 
     # check measure
     my $measure_rs = $sensor->search_related('measures');
     is $measure_rs->count, 2, 'two measures for this sensor';
     
+    is_deeply decode_json($response->content),
+              { sensor_id => $sensor->id, measure_id => 4,
+                latest_value => 2, min_value => 2, max_value => 2, nr_values => 1 },
+              'JSON Response looks good 3';
+
     my $measure = Measure->find(4);
     is_fields $measure,
               {
-                  sensor_id    => 2,
+                  sensor_id    => 3,
                   latest_value => 2,
                   min_value    => 2,
                   max_value    => 2,
@@ -230,22 +238,24 @@ sub add_some_measures {
     
     $sensor->create_related(
         measures => {
-            latest_value => 20,
-            min_value    => 13,
-            max_value    => 20,
-            sum_value    => 33,
-            nr_values    => 2,
-            starting_at  => $dt->clone,
-            ending_at    => $dt->clone->add( hours => 1 ),
-        });
-    $sensor->create_related(
-        measures => {
             latest_value => 14,
             min_value    => 14,
             max_value    => 21,
             sum_value    => 35,
             nr_values    => 2,
             starting_at  => $dt->clone->subtract( hours => 1 ),
+            updated_at   => $dt->clone->subtract( hours => 1 )->add( minutes => 13 ),
             ending_at    => $dt->clone,
+        });
+    $sensor->create_related(
+        measures => {
+            latest_value => 20,
+            min_value    => 13,
+            max_value    => 20,
+            sum_value    => 33,
+            nr_values    => 2,
+            starting_at  => $dt->clone,
+            updated_at   => $dt->clone->add( minutes => 42 ),
+            ending_at    => $dt->clone->add( hours => 1 ),
         });
 }
