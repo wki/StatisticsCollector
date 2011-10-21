@@ -1,2 +1,16 @@
 /* site.css */
 
+.sortable,
+.sorted {
+    color: #000000 !important;
+    text-decoration: none;
+}
+
+.sorted {
+    padding-left: 20px;
+    background: url(/static/images/bullet_arrow_up.png) top left no-repeat;
+}
+
+.sorted.desc {
+    background: url(/static/images/bullet_arrow_down.png) top left no-repeat;
+}

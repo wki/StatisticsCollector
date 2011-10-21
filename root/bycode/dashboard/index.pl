@@ -51,6 +51,8 @@ sub show_filters {
     
     foreach my $param (sort grep { m{\A filter_}xms } keys(%{c->req->params})) {
         my $name = $param; $name =~ s{\A filter_}{}xms;
+        next if $name eq 'special';
+        
         push @filters,
              {
                  name  => $name,
@@ -69,6 +71,28 @@ sub show_filters {
         }
     } else {
         span { 'no filters yet' };
+    }
+}
+
+sub show_special_filter {
+    my %description_for = (
+        ''      => '- special filters -',
+        missing => 'missing measures',
+        too_old => 'too old measures',
+        range   => 'values out of range',
+    );
+    
+    form (action => c->uri_for_action('dashboard/index'), method => 'GET') {
+        create_hidden_fields(filter_special => undef);
+        choice._submit_on_change(name => 'filter_special') {
+            foreach my $key (sort keys %description_for) {
+                option(value => $key) {
+                    attr selected => 1
+                        if (c->req->params->{filter_special} // '') eq $key;
+                    $description_for{$key};
+                };
+            }
+        };
     }
 }
 
@@ -99,6 +123,24 @@ sub show_pager {
 
 sub sortable_header {
     my ($field, $name) = @_;
+    
+    if (c->req->params->{sort} eq $field) {
+        my $sort_desc = c->req->params->{sort_desc} ? 1 : 0;
+        
+        # img(src => "/static/images/bullet_arrow_$dir.png");
+        a.sorted(href => c->uri_for_action('dashboard/index',
+                                           create_query_params(sort_desc => 1-$sort_desc))) {
+            class '+desc' if $sort_desc;
+            $name
+        };
+    } else {
+        #img(src => "/static/images/bullet_arrow_up.png");
+        a.sortable(href => c->uri_for_action('dashboard/index',
+                                             create_query_params(sort => $field, sort_desc => 0))) {
+            $name
+        };
+    }
+    return;
 }
 
 sub show_sensor_table {
@@ -195,7 +237,8 @@ template {
         };
         div.bd {
             div.line.mtm {
-                div.unit.size3of4.pll { show_filters() };
+                div.unit.size1of2.pll { show_filters() };
+                div.unit.size1of4.txtR.prl { show_special_filter() };
                 div.unit.size1of4.lastUnit.txtR.prl { show_pager() };
             };
             div.data.simpleTable { show_sensor_table() };

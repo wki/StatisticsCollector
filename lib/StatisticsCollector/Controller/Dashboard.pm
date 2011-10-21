@@ -2,7 +2,7 @@ package StatisticsCollector::Controller::Dashboard;
 use Moose;
 use namespace::autoclean;
 
-BEGIN {extends 'Catalyst::Controller'; }
+BEGIN { extends 'Catalyst::Controller' }
 
 =head1 NAME
 
@@ -42,6 +42,8 @@ sub index :Path :Args(0) {
     $page_nr = 1 if $page_nr < 1 || $page_nr > 10000;
     
     my $sort = $c->req->params->{sort} // 'name';
+    my $sort_desc = $c->req->params->{sort_desc} ? 1 : 0;
+    
     my %sort_field_for = (
         name   => 'me.name',
         latest => 'latest_measure.updated_at',
@@ -49,6 +51,9 @@ sub index :Path :Args(0) {
     );
     $sort = 'name' if !exists $sort_field_for{$sort};
     $c->req->params->{sort} = $sort;
+    my $order_by = $sort_desc
+        ? { -desc => $sort_field_for{$sort} }
+        : $sort_field_for{$sort};
     
     my @search;
     push @search,
@@ -61,6 +66,23 @@ sub index :Path :Args(0) {
          'me.name' => { -like => '%/%/' . $c->req->params->{filter_name3} }
         if $c->req->params->{filter_name3};
     
+    if (my $special = $c->req->params->{filter_special}) {
+        push @search,
+             'latest_measure.measure_id' => undef
+            if $special eq 'missing';
+        push @search,
+             -bool => 'latest_measure.measure_age_alarm',
+            if $special eq 'too_old';
+        push @search,
+             -or => [
+                -bool  => 'latest_measure.latest_value_gt_alarm',
+                -bool  => 'latest_measure.latest_value_lt_alarm',
+                -bool  => 'latest_measure.max_value_lt_alarm',
+                -bool  => 'latest_measure.min_value_gt_alarm',
+             ]
+            if $special eq 'range';
+    }
+    
     my $search_rs = 
         $c->model('DB::Sensor')
           ->search(
@@ -69,7 +91,7 @@ sub index :Path :Args(0) {
               },
               {
                   prefetch => 'latest_measure',
-                  order_by => $sort_field_for{$sort},
+                  order_by => $order_by,
                   page => $page_nr,
                   rows => $page_size,
               });
