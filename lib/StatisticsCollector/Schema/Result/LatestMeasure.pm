@@ -59,7 +59,7 @@ __PACKAGE__->result_source_instance->view_definition(q{
                            
                            /* aggregate alarm conditions */
                            sum(case when ac.max_measure_age_minutes is not null
-                                         and age(now(), m.starting_at) > (interval '1 minute') * ac.max_measure_age_minutes
+                                         and age(now(), m.updated_at) > (interval '1 minute') * ac.max_measure_age_minutes
                                         then 1
                                         else 0 end) > 0 as measure_age_alarm,
                            

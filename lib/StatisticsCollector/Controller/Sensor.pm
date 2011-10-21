@@ -52,8 +52,8 @@ sub default_GET {
         $self->status_ok(
             $c,
             entity => {
-                map { $_ => $measure->$_ }
-                qw(min_value max_value sum_value nr_values)
+                map { $_ => $measure->$_() }
+                qw(latest_value min_value max_value sum_value nr_values)
             },
         );
     } else {
@@ -79,14 +79,24 @@ sub default_POST {
             message => 'illegal syntax for sensor name',
         );
     } else {
-        ### TODO: create sensor if not yet present
-        ### TODO: add measure
-        
-        $self->status_created(
-            $c,
-            location => $c->req->uri->as_string,
-            entity => { bla => 'blubb' }
-        );
+        my $sensor = $c->model('DB::Sensor')
+                       ->find_or_create({name => join('/', @path)});
+        if (!$sensor) {
+            $self->status_bad_request(
+                $c,
+                message => 'Sensor not found',
+            );
+        } else {
+            my $measure = $sensor->add_measure($c->req->params->{value});
+            $self->status_created(
+                $c,
+                location => $c->req->uri->as_string,
+                entity => {
+                    map { $_ => $measure->$_() }
+                    qw(sensor_id measure_id min_value max_value latest_value nr_values)
+                },
+            );
+        }
     }
 }
 

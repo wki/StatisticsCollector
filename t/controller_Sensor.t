@@ -50,7 +50,7 @@ is Measure->count, 2, 'measures created';
     is $response->header('Content_Type'), 'application/json',
        'response content type is JSON';
     is_deeply decode_json($response->content),
-              { min_value => 13, max_value => 20, sum_value => 33, nr_values => 2 },
+              { latest_value => 20, min_value => 13, max_value => 20, sum_value => 33, nr_values => 2 },
               'JSON Response looks good';
 }
 
@@ -62,7 +62,7 @@ is Measure->count, 2, 'measures created';
     is $response->header('Content_Type'), 'text/x-yaml',
        'response content type is YAML';
     is_deeply Load($response->content),
-              { min_value => 13, max_value => 20, sum_value => 33, nr_values => 2 },
+              { latest_value => 20, min_value => 13, max_value => 20, sum_value => 33, nr_values => 2 },
               'YAML Response looks good';
 }
 
@@ -74,7 +74,7 @@ is Measure->count, 2, 'measures created';
     is $response->header('Content_Type'), 'text/x-yaml',
        'response content type is YAML 2';
     is_deeply Load($response->content),
-              { min_value => 13, max_value => 20, sum_value => 33, nr_values => 2 },
+              { latest_value => 20, min_value => 13, max_value => 20, sum_value => 33, nr_values => 2 },
               'YAML Response looks good 2';
 }
 
@@ -98,13 +98,19 @@ is Measure->count, 2, 'measures created';
     
     no warnings 'redefine';
     local *DateTime::now = sub { $dt->clone };
+    local *DBIx::Class::TimeStamp::get_timestamp = sub { return $dt->clone };
     
     is Sensor->search({ name => 'my/sensor/name' })->count, 0,
        'sensor not known before POST';
     
     my $response = request(POST '/sensor/my/sensor/name', [value => 42]);
-    is $response->code, 209,
-       'response code is 209-accepted';
+    is $response->code, 201,
+       'response code is 201-accepted';
+    
+    is_deeply decode_json($response->content),
+              { sensor_id => 2, measure_id => 3,
+                latest_value => 42, min_value => 42, max_value => 42, nr_values => 1 },
+              'JSON Response looks good';
     
     my $sensor_rs = Sensor->search({ name => 'my/sensor/name' });
     is $sensor_rs->count, 1,
@@ -112,18 +118,20 @@ is Measure->count, 2, 'measures created';
     my $sensor = $sensor_rs->first;
     
     # check measure
-    my $measure_rs = $sensor->search_related('measure');
+    my $measure_rs = $sensor->search_related('measures');
     is $measure_rs->count, 1, 'one measure so far';
     
     is_fields $measure_rs->first,
               {
-                  sensor_id   => $sensor->id,
-                  min_value   => 42,
-                  max_value   => 42,
-                  sum_value   => 42,
-                  nr_values   => 1,
-                  starting_at => $dt->clone->truncate( to => 'hour' ),
-                  ending_at   => $dt->clone->truncate( to => 'hour' )->add( hours => 1 ),
+                  sensor_id    => $sensor->id,
+                  latest_value => 42,
+                  min_value    => 42,
+                  max_value    => 42,
+                  sum_value    => 42,
+                  nr_values    => 1,
+                  starting_at  => $dt->clone->truncate( to => 'hour' ),
+                  updated_at   => $dt->clone,
+                  ending_at    => $dt->clone->truncate( to => 'hour' )->add( hours => 1 ),
               },
               'measure 1 fields look good';
 }
@@ -137,28 +145,37 @@ is Measure->count, 2, 'measures created';
     );
     no warnings 'redefine';
     local *DateTime::now = sub { $dt->clone };
-
+    local *DBIx::Class::TimeStamp::get_timestamp = sub { return $dt->clone };
+    
     my $response = request(POST '/sensor/my/sensor/name', [value => 20]);
-    is $response->code, 209,
-       'response code is 209-accepted';
+    is $response->code, 201,
+       'response code is 201-accepted';
+    
+    is_deeply decode_json($response->content),
+              { sensor_id => 2, measure_id => 3,
+                latest_value => 20, min_value => 20, max_value => 42, nr_values => 2 },
+              'JSON Response looks good';
+    
     my $sensor_rs = Sensor->search({ name => 'my/sensor/name' });
     is $sensor_rs->count, 1,
        'sensor is only one after POST 2';
     my $sensor = $sensor_rs->first;
     
     # check measure
-    my $measure_rs = $sensor->search_related('measure');
+    my $measure_rs = $sensor->search_related('measures');
     is $measure_rs->count, 1, 'one measure so far';
     
     is_fields $measure_rs->first,
               {
-                  sensor_id   => $sensor->id,
-                  min_value   => 20,
-                  max_value   => 42,
-                  sum_value   => 62,
-                  nr_values   => 2,
-                  starting_at => $dt->clone->truncate( to => 'hour' ),
-                  ending_at   => $dt->clone->truncate( to => 'hour' )->add( hours => 1 ),
+                  sensor_id    => $sensor->id,
+                  latest_value => 20,
+                  min_value    => 20,
+                  max_value    => 42,
+                  sum_value    => 62,
+                  nr_values    => 2,
+                  starting_at  => $dt->clone->truncate( to => 'hour' ),
+                  updated_at   => $dt->clone,
+                  ending_at    => $dt->clone->truncate( to => 'hour' )->add( hours => 1 ),
               },
               'measure 2 fields look good';
 }
@@ -172,17 +189,38 @@ is Measure->count, 2, 'measures created';
     );
     no warnings 'redefine';
     local *DateTime::now = sub { $dt->clone };
-
+    local *DBIx::Class::TimeStamp::get_timestamp = sub { return $dt->clone };
+    
     my $response = request(POST '/sensor/my/sensor/name', [value => 2]);
-    is $response->code, 209,
-       'response code is 209-accepted';
+    is $response->code, 201,
+       'response code is 201-accepted';
     is Sensor->search({ name => 'my/sensor/name' })->count, 1,
        'sensor is only one after POST 2';
 
+    is_deeply decode_json($response->content),
+              { sensor_id => 2, measure_id => 4,
+                latest_value => 2, min_value => 2, max_value => 2, nr_values => 1 },
+              'JSON Response looks good';
+
     # check measure
+    my $measure_rs = $sensor->search_related('measures');
+    is $measure_rs->count, 2, 'two measures for this sensor';
+    
+    my $measure = Measure->find(4);
+    is_fields $measure,
+              {
+                  sensor_id    => 2,
+                  latest_value => 2,
+                  min_value    => 2,
+                  max_value    => 2,
+                  sum_value    => 2,
+                  nr_values    => 1,
+                  starting_at  => $dt->clone->truncate( to => 'hour' ),
+                  updated_at   => $dt->clone,
+                  ending_at    => $dt->clone->truncate( to => 'hour' )->add( hours => 1 ),
+              },
+              'measure 3 fields look good';
 }
-
-
 
 done_testing();
 
@@ -192,20 +230,22 @@ sub add_some_measures {
     
     $sensor->create_related(
         measures => {
-            min_value   => 13,
-            max_value   => 20,
-            sum_value   => 33,
-            nr_values   => 2,
-            starting_at => $dt->clone,
-            ending_at   => $dt->clone->add( hours => 1 ),
+            latest_value => 20,
+            min_value    => 13,
+            max_value    => 20,
+            sum_value    => 33,
+            nr_values    => 2,
+            starting_at  => $dt->clone,
+            ending_at    => $dt->clone->add( hours => 1 ),
         });
     $sensor->create_related(
         measures => {
-            min_value   => 14,
-            max_value   => 21,
-            sum_value   => 35,
-            nr_values   => 2,
-            starting_at => $dt->clone->subtract( hours => 1 ),
-            ending_at   => $dt->clone,
+            latest_value => 14,
+            min_value    => 14,
+            max_value    => 21,
+            sum_value    => 35,
+            nr_values    => 2,
+            starting_at  => $dt->clone->subtract( hours => 1 ),
+            ending_at    => $dt->clone,
         });
 }
