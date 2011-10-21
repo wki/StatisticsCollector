@@ -338,6 +338,8 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
             max_measure_age_minutes => 100,
             min_value_gt            => -1000,
             max_value_lt            => 1000,
+            latest_value_gt         => -1000,
+            latest_value_lt         => 1000,
         }
     );
     is_fields $sensor1->discard_changes->latest_measure,
@@ -393,6 +395,54 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
               },
         'min-gt alarm is not fired for edge value inside range';
 
+    # latest-gt warning
+    $alarm1->update( 
+        { 
+            sensor_mask             => 'erlangen/keller/temperatur',
+            max_measure_age_minutes => 6_000,
+            min_value_gt            => undef,
+            max_value_lt            => undef,
+            latest_value_gt         =>    20,
+            latest_value_lt         => 1_000,
+        }
+    );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  latest_value_gt_alarm        => 1,
+                  max_severity_level           => 500,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'min-gt alarm is fired for values outside range';
+
+    $alarm1->update( { latest_value_gt => 14, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  latest_value_gt_alarm        => 1,
+                  max_severity_level           => 500,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'min-gt alarm is fired for edge values outside range';
+
+    $alarm1->update( { latest_value_gt => 13, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  latest_value_gt_alarm        => 1,
+                  max_severity_level           => 500,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'min-gt alarm is fired for equal values';
+    
+    $alarm1->update( { latest_value_gt => 12, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'min-gt alarm is not fired for edge value inside range';
+
     # max-lt warning
     $alarm1->update( 
         { 
@@ -400,6 +450,8 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
             max_measure_age_minutes => 100,
             min_value_gt            => -1000,
             max_value_lt            => 5,
+            latest_value_gt         => -1000,
+            latest_value_lt         => 1000,
         }
     );
     is_fields $sensor1->discard_changes->latest_measure,
@@ -439,13 +491,64 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
               },
         'max-lt alarm is not fired for edge value inside range';
     
+    # latest-lt warning
+    $alarm1->update( 
+        { 
+            sensor_mask             => 'erlangen/keller/temperatur',
+            max_measure_age_minutes => 100,
+            min_value_gt            => -1000,
+            max_value_lt            => 1000,
+            latest_value_gt         => -1000,
+            latest_value_lt         => 5,
+        }
+    );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  latest_value_lt_alarm        => 1,
+                  max_severity_level           => 500,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'max-lt alarm is fired for values outside range';
+
+    $alarm1->update( { latest_value_lt => 12, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  latest_value_lt_alarm        => 1,
+                  max_severity_level           => 500,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'max-lt alarm is fired for edge values outside range';
+
+    $alarm1->update( { latest_value_lt => 13, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  latest_value_lt_alarm        => 1,
+                  max_severity_level           => 500,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'max-lt alarm is fired for equal values';
+    
+    $alarm1->update( { latest_value_lt => 14, } );
+    is_fields $sensor1->discard_changes->latest_measure,
+              {
+                  %sensor1_measure,
+                  nr_matching_alarm_conditions => 1,
+              },
+        'max-lt alarm is not fired for edge value inside range';
+
     # age warning
+    ### TODO: edge cases !!!
     $alarm1->update( 
         { 
             sensor_mask             => 'erlangen/keller/temperatur',
             max_measure_age_minutes => 120,
             min_value_gt            => -1000,
             max_value_lt            => 1000,
+            latest_value_gt         => -1000,
+            latest_value_lt         => 1000,
         }
     );
     is_fields $sensor1->discard_changes->latest_measure,

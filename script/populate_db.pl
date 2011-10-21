@@ -23,7 +23,7 @@ my $t2  = $now->clone->truncate(to => 'hour');
 $schema->populate(
     AlarmCondition => [
         { sensor_mask => '%/%/temperatur',
-          max_measure_age => 2,
+          max_measure_age_minutes => 120,
           min_value_gt => 5, max_value_lt => 30,
           severity_level => 500 },
     ]);
@@ -31,128 +31,41 @@ $schema->populate(
     Sensor => [
         { name => 'erlangen/keller/temperatur',
           measures => [
-            { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+            { latest_value => 10, min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
               starting_at => $t0, updated_at => $t0x, ending_at => $t1 },
           ] },
         { name => 'erlangen/waschkueche/temperatur'  ,
             measures => [
-              { min_value => 12, max_value => 14, sum_value => 26, nr_values => 2,
+              { latest_value => 12, min_value => 12, max_value => 14, sum_value => 26, nr_values => 2,
                 starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
             ] },
         { name => 'erlangen/heizung/temperatur'    ,
               measures => [
-                { min_value => 11, max_value => 11, sum_value => 11, nr_values => 1,
+                { latest_value => 11, min_value => 11, max_value => 11, sum_value => 11, nr_values => 1,
                   starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
               ] },
         { name => 'erlangen/treppenhaus/temperatur'      ,
                 measures => [
-                  { min_value => 1, max_value => 3, sum_value => 4, nr_values => 2,
+                  { latest_value => 3, min_value => 1, max_value => 3, sum_value => 4, nr_values => 2,
                     starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
                 ] },
         { name => 'erlangen/hof/temperatur' },
         
-        { name => 'trainmeusel/keller/temperatur',
-          measures => [
-            { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-              starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-          ] },
-        { name => 'trainmeusel/waschkueche/temperatur'  ,
-            measures => [
-              { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-            ] },
-        { name => 'trainmeusel/heizung/temperatur'    ,
-              measures => [
-                { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                  starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-              ] },
-        { name => 'trainmeusel/treppenhaus/temperatur'      ,
-                measures => [
-                  { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                    starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-                ] },
-        { name => 'trainmeusel/hof/temperatur'        ,
+        # add some dummy records just to fill DB
+        (
+            map {
+                { name => $_,
                   measures => [
-                    { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
+                    { latest_value => 10, min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
                       starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-                  ] },
-        
-        { name => 'kairo/keller/temperatur',
-          measures => [
-            { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-              starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-          ] },
-        { name => 'kairo/waschkueche/temperatur'  ,
-            measures => [
-              { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-            ] },
-        { name => 'kairo/heizung/temperatur'    ,
-              measures => [
-                { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                  starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-              ] },
-        { name => 'kairo/treppenhaus/temperatur'      ,
-                measures => [
-                  { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                    starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-                ] },
-        { name => 'kairo/hof/temperatur'        ,
-                  measures => [
-                    { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                      starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-                  ] },
-        
-        { name => 'monaco/keller/temperatur',
-          measures => [
-            { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-              starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-          ] },
-        { name => 'monaco/waschkueche/temperatur'  ,
-            measures => [
-              { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-            ] },
-        { name => 'monaco/heizung/temperatur'    ,
-              measures => [
-                { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                  starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-              ] },
-        { name => 'monaco/treppenhaus/temperatur'      ,
-                measures => [
-                  { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                    starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-                ] },
-        { name => 'monaco/hof/temperatur'        ,
-                  measures => [
-                    { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                      starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-                  ] },
-        
-        { name => 'berlin/keller/temperatur',
-          measures => [
-            { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-              starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-          ] },
-        { name => 'berlin/waschkueche/temperatur'  ,
-            measures => [
-              { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-            ] },
-        { name => 'berlin/heizung/temperatur'    ,
-              measures => [
-                { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                  starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-              ] },
-        { name => 'berlin/treppenhaus/temperatur'      ,
-                measures => [
-                  { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                    starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-                ] },
-        { name => 'berlin/hof/temperatur'        ,
-                  measures => [
-                    { min_value => 10, max_value => 10, sum_value => 10, nr_values => 1,
-                      starting_at => $t1, updated_at => $t1x, ending_at => $t2 },
-                  ] },
-    ],
+                  ] }
+            }
+            map { 
+                my $location = $_; 
+                map { "$location/$_/temperatur" } 
+                qw(keller waschkueche heizung treppenhaus hof)
+            }
+            qw(monaco new_york rio tokio)
+        )
+  ],
 );

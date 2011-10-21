@@ -25,8 +25,9 @@ sub show_sensor_table {
         thead {
             trow {
                 th(width => '45%') { 'Sensor' };
-                th(width => '25%') { 'Latest Measure' };
-                th(width => '20%') { 'min / avg / max' };
+                th(width => '20%') { 'Latest Measure' };
+                th(width => '10%') { 'value' };
+                th(width => '15%') { 'min/avg/max' };
                 th(width => '5%') { '#' };
                 th(width => '5%') { '' };
             };
@@ -58,6 +59,15 @@ sub show_data_row {
             
             $latest 
                 ? $latest->updated_at->strftime('%Y-%m-%d %H:%M')
+                : '-'
+        };
+        tcol {
+            class '+negative'
+                if $latest
+                   && ($latest->latest_value_gt_alarm || $latest->latest_value_lt_alarm);
+            
+            $latest 
+                ? $latest->latest_value
                 : '-'
         };
         tcol { 
