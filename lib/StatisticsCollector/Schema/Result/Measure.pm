@@ -14,6 +14,11 @@ column sensor_id => {
     is_nullable => 0,
 };
 
+column latest_value => {
+    data_type => 'int',
+    is_nullable => 0,
+};
+
 column min_value => {
     data_type => 'int',
     is_nullable => 0,
@@ -59,12 +64,13 @@ sub new {
                             ->truncate( to => 'hour' );
     my $next_hour = $this_hour->clone->add( hours => 1 );
     
-    $attrs->{starting_at} //= $this_hour;
-    $attrs->{ending_at}   //= $next_hour;
-    $attrs->{min_value}   //= 0;
-    $attrs->{max_value}   //= $attrs->{min_value};
-    $attrs->{sum_value}   //= $attrs->{min_value};
-    $attrs->{nr_values}   //= 1;
+    $attrs->{starting_at}  //= $this_hour;
+    $attrs->{ending_at}    //= $next_hour;
+    $attrs->{latest_value} //= 0;
+    $attrs->{min_value}    //= $attrs->{latest_value};
+    $attrs->{max_value}    //= $attrs->{latest_value};
+    $attrs->{sum_value}    //= $attrs->{latest_value};
+    $attrs->{nr_values}    //= 1;
     
     return $class->next::method($attrs);
 }

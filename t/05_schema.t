@@ -75,14 +75,15 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         is_result $measure;
         is_fields $measure,
                   {
-                      sensor_id   => 1,
-                      min_value   => 42,
-                      max_value   => 42,
-                      sum_value   => 42,
-                      nr_values   => 1,
-                      starting_at => $t2,
-                      updated_at  => $test_time,
-                      ending_at   => $t1,
+                      sensor_id    => 1,
+                      latest_value => 42,
+                      min_value    => 42,
+                      max_value    => 42,
+                      sum_value    => 42,
+                      nr_values    => 1,
+                      starting_at  => $t2,
+                      updated_at   => $test_time,
+                      ending_at    => $t1,
                   },
             'measure 1 fields look good';
         is Measure->count, 1, '1 record in measure table';
@@ -93,14 +94,15 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         $measure->discard_changes;
         is_fields $measure,
                   {
-                      sensor_id   => 1,
-                      min_value   => 10,
-                      max_value   => 42,
-                      sum_value   => 52,
-                      nr_values   => 2,
-                      starting_at => $t2,
-                      updated_at  => $test_time,
-                      ending_at   => $t1,
+                      sensor_id    => 1,
+                      latest_value => 10,
+                      min_value    => 10,
+                      max_value    => 42,
+                      sum_value    => 52,
+                      nr_values    => 2,
+                      starting_at  => $t2,
+                      updated_at   => $test_time,
+                      ending_at    => $t1,
                   },
             'measure 2 fields look good';
         is Measure->count, 1, '1 record in measure table (2)';
@@ -110,14 +112,15 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         lives_ok { $measure = $sensor1->add_measure(60) } 'add measure 3 lives';
         is_fields $measure,
                   {
-                      sensor_id   => 1,
-                      min_value   => 10,
-                      max_value   => 60,
-                      sum_value   => 112,
-                      nr_values   => 3,
-                      starting_at => $t2,
-                      updated_at  => $test_time,
-                      ending_at   => $t1,
+                      sensor_id    => 1,
+                      latest_value => 60,
+                      min_value    => 10,
+                      max_value    => 60,
+                      sum_value    => 112,
+                      nr_values    => 3,
+                      starting_at  => $t2,
+                      updated_at   => $test_time,
+                      ending_at    => $t1,
                   },
             'measure 3 fields look good';
         is Measure->count, 1, '1 record in measure table (3)';
@@ -130,14 +133,15 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         lives_ok { $measure = $sensor1->add_measure(13) } 'add measure 4 lives';
         is_fields $measure,
                   {
-                      sensor_id   => 1,
-                      min_value   => 13,
-                      max_value   => 13,
-                      sum_value   => 13,
-                      nr_values   => 1,
-                      starting_at => $t1,
-                      updated_at  => $test_time,
-                      ending_at   => $t0,
+                      sensor_id    => 1,
+                      latest_value => 13,
+                      min_value    => 13,
+                      max_value    => 13,
+                      sum_value    => 13,
+                      nr_values    => 1,
+                      starting_at  => $t1,
+                      updated_at   => $test_time,
+                      ending_at    => $t0,
                   },
             'measure 4 fields look good';
         is Measure->count, 2, '2 records in measure table';
@@ -150,14 +154,15 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         lives_ok { $measure = $sensor2->add_measure(26) } 'add measure 5 lives';
         is_fields $measure,
                   {
-                      sensor_id   => 2,
-                      min_value   => 26,
-                      max_value   => 26,
-                      sum_value   => 26,
-                      nr_values   => 1,
-                      starting_at => $t1,
-                      updated_at  => $test_time,
-                      ending_at   => $t0,
+                      sensor_id    => 2,
+                      latest_value => 26,
+                      min_value    => 26,
+                      max_value    => 26,
+                      sum_value    => 26,
+                      nr_values    => 1,
+                      starting_at  => $t1,
+                      updated_at   => $test_time,
+                      ending_at    => $t0,
                   },
             'measure 5 fields look good';
         is Measure->count, 3, '3 records in measure table';
@@ -172,6 +177,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         is_fields $measure,
                   {
                       sensor_id                    => 1,
+                      latest_value                 => 13,
                       min_value                    => 13,
                       max_value                    => 13,
                       sum_value                    => 13,
@@ -179,10 +185,12 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       starting_at                  => $t1,
                       updated_at                   => $test_time,
                       ending_at                    => $t0,
-                      max_severity_level           => undef,
-                      max_value_lt_alarm           => 0,
                       measure_age_alarm            => 0,
+                      latest_value_gt_alarm        => 0,
+                      latest_value_lt_alarm        => 0,
                       min_value_gt_alarm           => 0,
+                      max_value_lt_alarm           => 0,
+                      max_severity_level           => undef,
                       nr_matching_alarm_conditions => 0,
                   },
             'sensor 1 latest_measure fields look good';
@@ -193,6 +201,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         is_fields $measure,
                   {
                       sensor_id                    => 2,
+                      latest_value                 => 26,
                       min_value                    => 26,
                       max_value                    => 26,
                       sum_value                    => 26,
@@ -200,10 +209,12 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       starting_at                  => $t1,
                       updated_at                   => $test_time,
                       ending_at                    => $t0,
-                      max_severity_level           => undef,
-                      max_value_lt_alarm           => 0,
                       measure_age_alarm            => 0,
+                      latest_value_gt_alarm        => 0,
+                      latest_value_lt_alarm        => 0,
                       min_value_gt_alarm           => 0,
+                      max_value_lt_alarm           => 0,
+                      max_severity_level           => undef,
                       nr_matching_alarm_conditions => 0,
                   },
             'sensor 2 latest_measure fields look good';
@@ -224,6 +235,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
         is_fields $measure,
                   {
                       sensor_id                    => 3,
+                      latest_value                 =>-42,
                       min_value                    =>-42,
                       max_value                    =>-42,
                       sum_value                    =>-42,
@@ -231,10 +243,12 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
                       starting_at                  => $t0,
                       updated_at                   => $test_time,
                       ending_at                    => $ta,
-                      max_severity_level           => undef,
-                      max_value_lt_alarm           => 0,
                       measure_age_alarm            => 0,
+                      latest_value_gt_alarm        => 0,
+                      latest_value_lt_alarm        => 0,
                       min_value_gt_alarm           => 0,
+                      max_value_lt_alarm           => 0,
+                      max_severity_level           => undef,
                       nr_matching_alarm_conditions => 0,
                   },
             'sensor 3 latest_measure fields look good';
@@ -251,14 +265,23 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     
     my $alarm1;
     my %sensor1_measure = (
-        sensor_id   => 1,
-        min_value   => 13,
-        max_value   => 13,
-        sum_value   => 13,
-        nr_values   => 1,
-        starting_at => $t1,
-        updated_at  => $t1->clone->set(minute => 0),
-        ending_at   => $t0,
+        sensor_id                    => 1,
+        latest_value                 => 13,
+        min_value                    => 13,
+        max_value                    => 13,
+        sum_value                    => 13,
+        nr_values                    => 1,
+        starting_at                  => $t1,
+        updated_at                   => $t1->clone->set(minute => 0),
+        ending_at                    => $t0,
+        measure_age_alarm            => 0,
+        latest_value_gt_alarm        => 0,
+        latest_value_lt_alarm        => 0,
+        min_value_gt_alarm           => 0,
+        max_value_lt_alarm           => 0,
+        max_severity_level           => undef,
+        nr_matching_alarm_conditions => 0,
+        
     );
     
     # a mask-non-matching alarm does neither show up not warn
@@ -272,11 +295,6 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
-                  nr_matching_alarm_conditions => 0,
               },
         'nonsense alarm is not seen';
     
@@ -285,10 +303,6 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
                   nr_matching_alarm_conditions => 1,
               },
         'fully masked alarm is seen';
@@ -297,10 +311,6 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
                   nr_matching_alarm_conditions => 1,
               },
         'begin-masked alarm is seen';
@@ -309,10 +319,6 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
                   nr_matching_alarm_conditions => 1,
               },
         'mid-masked alarm is seen';
@@ -321,10 +327,6 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
                   nr_matching_alarm_conditions => 1,
               },
         'end-masked alarm is seen';
@@ -332,19 +334,15 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     # a mask-matching and out-of-range-valued alarm shows but does not warn
     $alarm1->update( 
         { 
-            sensor_mask => 'erlangen/keller/temperatur',
-            max_measure_age => 100,
-            min_value_gt    => -1000,
-            max_value_lt    => 1000,
+            sensor_mask             => 'erlangen/keller/temperatur',
+            max_measure_age_minutes => 100,
+            min_value_gt            => -1000,
+            max_value_lt            => 1000,
         }
     );
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
                   nr_matching_alarm_conditions => 1,
               },
         'in-range alarm is seen';
@@ -352,19 +350,17 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     # min-gt warning
     $alarm1->update( 
         { 
-            sensor_mask => 'erlangen/keller/temperatur',
-            max_measure_age => 100,
-            min_value_gt    => 20,
-            max_value_lt    => 1000,
+            sensor_mask             => 'erlangen/keller/temperatur',
+            max_measure_age_minutes => 6_000,
+            min_value_gt            =>    20,
+            max_value_lt            => 1_000,
         }
     );
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
                   min_value_gt_alarm           => 1,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 1,
               },
         'min-gt alarm is fired for values outside range';
@@ -373,10 +369,8 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
                   min_value_gt_alarm           => 1,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 1,
               },
         'min-gt alarm is fired for edge values outside range';
@@ -385,10 +379,8 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
                   min_value_gt_alarm           => 1,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 1,
               },
         'min-gt alarm is fired for equal values';
@@ -397,10 +389,6 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
                   nr_matching_alarm_conditions => 1,
               },
         'min-gt alarm is not fired for edge value inside range';
@@ -408,19 +396,17 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     # max-lt warning
     $alarm1->update( 
         { 
-            sensor_mask => 'erlangen/keller/temperatur',
-            max_measure_age => 100,
-            min_value_gt    => -1000,
-            max_value_lt    => 5,
+            sensor_mask             => 'erlangen/keller/temperatur',
+            max_measure_age_minutes => 100,
+            min_value_gt            => -1000,
+            max_value_lt            => 5,
         }
     );
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
                   max_value_lt_alarm           => 1,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 1,
               },
         'max-lt alarm is fired for values outside range';
@@ -429,10 +415,8 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
                   max_value_lt_alarm           => 1,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 1,
               },
         'max-lt alarm is fired for edge values outside range';
@@ -441,10 +425,8 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
                   max_value_lt_alarm           => 1,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 1,
               },
         'max-lt alarm is fired for equal values';
@@ -453,10 +435,6 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
                   nr_matching_alarm_conditions => 1,
               },
         'max-lt alarm is not fired for edge value inside range';
@@ -464,31 +442,25 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     # age warning
     $alarm1->update( 
         { 
-            sensor_mask => 'erlangen/keller/temperatur',
-            max_measure_age => 2,
-            min_value_gt    => -1000,
-            max_value_lt    => 1000,
+            sensor_mask             => 'erlangen/keller/temperatur',
+            max_measure_age_minutes => 120,
+            min_value_gt            => -1000,
+            max_value_lt            => 1000,
         }
     );
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => undef,
-                  max_value_lt_alarm           => 0,
-                  measure_age_alarm            => 0,
-                  min_value_gt_alarm           => 0,
                   nr_matching_alarm_conditions => 1,
               },
         'age alarm is not fired for ages in range';
 
-    $alarm1->update( { max_measure_age => 1 } );
+    $alarm1->update( { max_measure_age_minutes => 1 } );
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
-                  max_value_lt_alarm           => 0,
                   measure_age_alarm            => 1,
-                  min_value_gt_alarm           => 0,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 1,
               },
         'age alarm is fired for ages out of range';
@@ -496,7 +468,7 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     # multiple alarms work, severity is max
     my $alarm2 = AlarmCondition->create(
         {
-            sensor_mask => 'foo/bar/mask', # should never match
+            sensor_mask    => 'foo/bar/mask', # should never match
             severity_level => 300,
         }
     );
@@ -505,10 +477,8 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
-                  max_value_lt_alarm           => 0,
                   measure_age_alarm            => 1,
-                  min_value_gt_alarm           => 0,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 1,
               },
         'age alarm is fired for ages out of range, nonsense alarm ignored';
@@ -517,10 +487,8 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
-                  max_value_lt_alarm           => 0,
                   measure_age_alarm            => 1,
-                  min_value_gt_alarm           => 0,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 2,
               },
         'age alarm is still fired, other alarm not fired';
@@ -529,10 +497,9 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 500,
-                  max_value_lt_alarm           => 0,
                   measure_age_alarm            => 1,
                   min_value_gt_alarm           => 1,
+                  max_severity_level           => 500,
                   nr_matching_alarm_conditions => 2,
               },
         'age alarm and min_value_gt alarm is fired';
@@ -541,10 +508,9 @@ my $ta = $now->clone->truncate(to => 'hour')->add(hours => 1);
     is_fields $sensor1->discard_changes->latest_measure,
               {
                   %sensor1_measure,
-                  max_severity_level           => 900,
-                  max_value_lt_alarm           => 0,
                   measure_age_alarm            => 1,
                   min_value_gt_alarm           => 1,
+                  max_severity_level           => 900,
                   nr_matching_alarm_conditions => 2,
               },
         'reported severity level is maximum';

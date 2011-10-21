@@ -40,22 +40,24 @@ sub add_measure {
     if ($measure_for_this_hour) {
         $measure_for_this_hour->update(
             {
-                min_value => min($measure_for_this_hour->min_value, $value),
-                max_value => max($measure_for_this_hour->max_value, $value),
-                sum_value => $measure_for_this_hour->sum_value() + $value,
-                nr_values => $measure_for_this_hour->nr_values() + 1,
+                latest_value => $value,
+                min_value    => min($measure_for_this_hour->min_value, $value),
+                max_value    => max($measure_for_this_hour->max_value, $value),
+                sum_value    => $measure_for_this_hour->sum_value() + $value,
+                nr_values    => $measure_for_this_hour->nr_values() + 1,
             });
     } else {
         $measure_for_this_hour =
             $self->create_related(
                      measures =>
-                     { 
-                         min_value   => $value,
-                         max_value   => $value,
-                         sum_value   => $value,
-                         nr_values   => 1,
-                         starting_at => $this_hour,
-                         ending_at   => $next_hour,
+                     {
+                         latest_value  => $value,
+                         min_value     => $value,
+                         max_value     => $value,
+                         sum_value     => $value,
+                         nr_values     => 1,
+                         starting_at   => $this_hour,
+                         ending_at     => $next_hour,
                      } );
     }
 

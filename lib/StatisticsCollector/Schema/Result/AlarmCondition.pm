@@ -17,9 +17,25 @@ column sensor_mask => {
 };
 
 #
-# maximum age of measure in hours (2 or more make sense, because our interval is 1 hour)
+# maximum age of measure in minutes
 #
-column max_measure_age => {
+column max_measure_age_minutes => {
+    data_type => 'int',
+    is_nullable => 1,
+};
+
+#
+# assert that latest value is greater than this
+#
+column latest_value_gt => {
+    data_type => 'int',
+    is_nullable => 1,
+};
+
+#
+# assert that latest value is less than this
+#
+column latest_value_lt => {
     data_type => 'int',
     is_nullable => 1,
 };
