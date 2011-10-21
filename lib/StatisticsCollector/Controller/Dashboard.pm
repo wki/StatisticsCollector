@@ -21,11 +21,10 @@ Presents a dashboard page for the regular user
 
 displays a list of measures, influenced by sort/filter criteria
 
-sort:            name of field to order by ("-" prefix for reverse)
+sort:            name of field to order by
+sort_desc:       0/1
 filter_name1-3:  'whatever' -- part 1-3
-filter_missing:  0/1 (w/o or w/ missing measures)
-filter_severity: 0 (OK) or number or number-number (errors w/severity level range)
-filter_age:      num - num
+filter_special:  too_old/missing/range
 page_nr:         1
 page_size:       default 25
 
@@ -34,12 +33,50 @@ page_size:       default 25
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
     
+    my ($page_size, $page_nr) = $self->_get_page_size_and_page_nr($c);
+    my $order_by              = $self->_determine_order_column($c);
+    my @search_criteria       = $self->_compose_search_criteria($c);
+    
+    my $search_rs = 
+        $c->model('DB::Sensor')
+          ->search(
+              {
+                  @search_criteria
+              },
+              {
+                  prefetch => 'latest_measure',
+                  order_by => $order_by,
+                  page     => $page_nr,
+                  rows     => $page_size,
+              });
+    
+    # we must fix our pager and resultset if requested page is over limit
+    my $pager = $search_rs->pager;
+    if ($page_nr > $pager->last_page) {
+        $c->req->params->{page_nr} = $pager->last_page;
+        $search_rs = $search_rs->search( undef, { page => $pager->last_page } );
+    }
+    
+    $c->stash(
+        sensors => [ $search_rs->all ],
+        pager   => $pager,
+    );
+}
+
+sub _get_page_size_and_page_nr {
+    my ($self, $c) = @_;
     
     my $page_size = $c->req->params->{page_size};
     $page_size = 25 if $page_size < 10 || $page_size > 100;
     
     my $page_nr   = $c->req->params->{page_nr};
     $page_nr = 1 if $page_nr < 1 || $page_nr > 10000;
+    
+    return ($page_size, $page_nr);
+}
+
+sub _determine_order_column {
+    my ($self, $c) = @_;
     
     my $sort = $c->req->params->{sort} // 'name';
     my $sort_desc = $c->req->params->{sort_desc} ? 1 : 0;
@@ -51,11 +88,18 @@ sub index :Path :Args(0) {
     );
     $sort = 'name' if !exists $sort_field_for{$sort};
     $c->req->params->{sort} = $sort;
-    my $order_by = $sort_desc
+    
+    return $sort_desc
         ? { -desc => $sort_field_for{$sort} }
         : $sort_field_for{$sort};
     
+}
+
+sub _compose_search_criteria {
+    my ($self, $c) = @_;
+    
     my @search;
+    
     push @search,
          'me.name' => { -like => $c->req->params->{filter_name1} . '/%/%' }
         if $c->req->params->{filter_name1};
@@ -83,31 +127,10 @@ sub index :Path :Args(0) {
             if $special eq 'range';
     }
     
-    my $search_rs = 
-        $c->model('DB::Sensor')
-          ->search(
-              {
-                  (@search ? (-and => \@search) : ()),
-              },
-              {
-                  prefetch => 'latest_measure',
-                  order_by => $order_by,
-                  page => $page_nr,
-                  rows => $page_size,
-              });
-    
-    my $pager = $search_rs->pager;
-    if ($page_nr > $pager->last_page) {
-        $c->req->params->{page_nr} = $pager->last_page;
-        $search_rs = $search_rs->search( undef, { page => $pager->last_page } );
-    }
-    
-    $c->stash(
-        sensors => [ $search_rs->all ],
-        pager   => $pager,
-    );
+    return @search
+        ? (-and => \@search)
+        : ();
 }
-
 
 =head1 AUTHOR
 

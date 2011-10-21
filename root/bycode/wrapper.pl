@@ -15,23 +15,20 @@ template {
                     h1 { stash->{headline} // stash->{title} // 'Statistics Collector' };
                 };
                 div.body {
-                    # div.leftCol {
-                    #     mod.complex.excerpt {
-                    #         div.bd {
-                    #             ul {
-                    #                 li.topper.current { 'select' };
-                    #                 li.topper { 'one' };
-                    #                 li.topper { 'thing' };
-                    #             };
-                    #         };
-                    #     };
-                    # };
                     div.main {
                         yield;
                     };
                 };
                 div.foot {
-                    div.ft.act { 'footer' };
+                    div.ft.act.phm.pvs.mbl { 
+                        div.line {
+                            div.unit.size1of3 { "Statistics Collector $StatisticsCollector::VERSION" };
+                            div.unit.size1of3.txtC { 'Copyright (C) 2011 WKI' };
+                            div.unit.size1of3.lastUnit.txtR {
+                                a(href => '#') { 'Info' };
+                            };
+                        };
+                    };
                 };
             };
         };
