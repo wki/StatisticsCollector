@@ -11,20 +11,10 @@ sub _construct_filter_params {
         keys %{c->req->params};
     
     foreach my $key (keys %args) {
-        my ($operation, $name) = ($key =~ m{\A ([-+]?) (.*) \z}xms);
-        $operation //= '';
-        c->log->debug("operation: $operation, key: $key, name: $name");
-        if ($operation eq '-' || !defined $args{$name}) {
-            delete $page_params{$name};
-        } elsif ($operation eq '+') {
-            if (exists($page_params{$name})) {
-                my @x = ref $page_params{$name} ? @{$page_params{$name}} : $page_params{$name};
-                $page_params{$name} = [ @x, $args{$name} ];
-            } else {
-                $page_params{$name} = $args{$name};
-            }
+        if (!defined $args{$key}) {
+            delete $page_params{$key};
         } else {
-            $page_params{$name} = $args{$name};
+            $page_params{$key} = $args{$key};
         }
     }
     
@@ -32,10 +22,7 @@ sub _construct_filter_params {
 }
 
 sub create_query_params {
-    my $page_params = _construct_filter_params(@_);
-    
-    ### TODO: this is not yet right. Array-refs must yield repeating fields
-    return $page_params;
+    return _construct_filter_params(@_);
 }
 
 sub create_hidden_fields {

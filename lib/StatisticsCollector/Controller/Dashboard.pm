@@ -67,10 +67,10 @@ sub _get_page_size_and_page_nr {
     my ($self, $c) = @_;
     
     my $page_size = $c->req->params->{page_size};
-    $page_size = 25 if $page_size < 10 || $page_size > 100;
+    $page_size = 25 if !$page_size || $page_size < 10 || $page_size > 100;
     
     my $page_nr   = $c->req->params->{page_nr};
-    $page_nr = 1 if $page_nr < 1 || $page_nr > 10000;
+    $page_nr = 1 if !$page_nr || $page_nr < 1 || $page_nr > 10000;
     
     return ($page_size, $page_nr);
 }
