@@ -527,7 +527,6 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       'max-lt alarm is not fired for edge value inside range';
 
     # age warning
-    ### TODO: edge cases !!!
     $alarm1->update(
         {
             sensor_mask             => 'erlangen/keller/temperatur',
@@ -566,6 +565,17 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     is_fields $sensor1->discard_changes->latest_measure,
       { %sensor1_measure, nr_matching_alarm_conditions => 1, },
       'age alarm is not fired for ages just in range';
+
+    $alarm1->update(
+        {
+            sensor_mask             => 'erlangen/keller/temperatur',
+            max_measure_age_minutes => 1,
+            min_value_gt            => -1000,
+            max_value_lt            => 1000,
+            latest_value_gt         => -1000,
+            latest_value_lt         => 1000,
+        }
+    );
 
     # multiple alarms work, severity is max
     my $alarm2 = AlarmCondition->create(
