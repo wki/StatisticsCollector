@@ -21,6 +21,8 @@ requires 'Proc::Class';
 requires 'DBIx::Class::DeploymentHandler';
 requires 'Catalyst::View::ByCode';
 requires 'Catalyst::Controller::Combine';
+requires 'Imager';
+requires 'Imager::Graph';
 
 test_requires 'Test::More' => '0.88';
 test_requires 'Test::Exception';
