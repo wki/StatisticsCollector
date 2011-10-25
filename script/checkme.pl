@@ -10,7 +10,26 @@ use POSIX 'strftime';
 
 my $FORMAT = '%Y-%m-%d %H:%M:%S %z (%Z)';
 
-my $schema = StatisticsCollector::Schema->connect('dbi:Pg:dbname=statistics_test', 'postgres', '');
+my $schema = StatisticsCollector::Schema->connect('dbi:Pg:dbname=statistics', 'postgres', '');
+
+my $sensor = $schema->resultset('Sensor')->find(26);
+
+my @measures = $sensor->interval_measures();
+say "Nr Measures: ${\scalar @measures}";
+say $_->starting_at->strftime($FORMAT), $_->min_value for @measures;
+
+
+# my @intervals =
+#     $schema->resultset('DayInterval')
+#            ->search( 
+#                undef,
+#                { bind => [10] } )
+#            ->all();
+# say "Nr Intervals: ${\scalar @intervals}";
+# say $_->starting_at->strftime($FORMAT) for @intervals;
+
+
+__END__
 
 my $sensor = $schema->resultset('Sensor')->find(1, {prefetch => 'latest_measure'});
 my $latest_measure = $sensor->latest_measure;

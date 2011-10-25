@@ -34,13 +34,23 @@ sub index : Path : Args(0) {
         'Matched StatisticsCollector::Controller::Graph in Graph.');
 }
 
+=head2 base
+
+base of all chains defined here
+
+=cut
+
+sub base :Chained('/') :PathPrefix {
+    my ( $self, $c ) = @_;
+}
+
 =head2 sensor
 
 startpoint of a common chain allowing to specify the sensor to show tha graph for
 
 =cut
 
-sub sensor : Chained('/') : PathPrefix : CaptureArgs(1)  {
+sub sensor :Chained('base') :CaptureArgs(1)  {
     my ( $self, $c, $sensor_id ) = @_;
 
     $c->stash->{sensor} = $c->model('DB::Sensor')->find($sensor_id)
@@ -63,7 +73,7 @@ sub bar : Chained('sensor') :Args(0) {
         width    => 300,
         height   => 200,
         data     => [ 
-            [ [ 1, 2, 1, 3, 1, 0, 1 ], 'max' ],
+            [ [ 1, 2, 1, 3, 1, 0, 1 ], 'max' ], # actually: max - min
             [ [ 1, 2, 3, 6, 5, 7, 3 ], 'min' ],
         ],
         labels   => [ qw(M T W T F S S) ],

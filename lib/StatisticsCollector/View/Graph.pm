@@ -52,7 +52,7 @@ sub process {
         hgrid          => { style => "dashed", color => "#888" },
         graph          => { outline => { color => "#F00", style => "dotted" }, },
 
-    ) || die $graph->error;
+    ) or die $graph->error;
 
     my $data;
     $img->write( data => \$data, type => 'png' );
