@@ -69,10 +69,7 @@ sub aggregate_measures {
     my $unit = shift || 'day';
     my $nr_samples = shift || 10;
     
-    $unit =~ s{s\z}{}xms; # simple plural->simgular conversion :-)
-    
-    return $self->result_source->schema
-                ->resultset('AggregateMeasure')
+    return $self->result_source->schema->resultset('AggregateMeasure')
                 ->search( undef, { bind => [$unit, $nr_samples, $self->id] } );
 }
 
