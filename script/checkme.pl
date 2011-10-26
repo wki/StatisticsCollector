@@ -14,9 +14,9 @@ my $schema = StatisticsCollector::Schema->connect('dbi:Pg:dbname=statistics', 'p
 
 my $sensor = $schema->resultset('Sensor')->find(26);
 
-my @measures = $sensor->interval_measures();
+my @measures = $sensor->aggregate_measures('week', 20);
 say "Nr Measures: ${\scalar @measures}";
-say $_->starting_at->strftime($FORMAT), $_->min_value for @measures;
+say $_->starting_at->strftime($FORMAT), $_->min_value // '-undef-', " (${\$_->nr_values})"  for @measures;
 
 
 # my @intervals =
