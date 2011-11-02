@@ -3,7 +3,7 @@ use Moose;
 use Imager::Graph;
 use namespace::autoclean;
 
-BEGIN { extends 'Catalyst::Controller'; }
+BEGIN { extends 'Catalyst::Controller' }
 
 =head1 NAME
 
@@ -19,11 +19,15 @@ generate Graph Images
 
 =head2 end
 
+empty end action that replaces Root's end
+
 =cut
 
 sub end :Private {}
 
 =head2 index
+
+maybe unneccesary -- we will see
 
 =cut
 
@@ -46,7 +50,7 @@ sub base :Chained('/') :PathPrefix {
 
 =head2 sensor
 
-startpoint of a common chain allowing to specify the sensor to show tha graph for
+startpoint of a common chain allowing to specify the sensor to show the graph for
 
 =cut
 
