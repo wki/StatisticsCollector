@@ -69,7 +69,7 @@ URL: /graph/<sensor_id>/bar
 
 =cut
 
-sub bar : Chained('sensor') :Args(0) {
+sub bar :Chained('sensor') :Args(0) {
     my ( $self, $c ) = @_;
 
     $c->stash(
