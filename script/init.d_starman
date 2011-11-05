@@ -1,0 +1,53 @@
+#!/bin/sh
+NAME="starman"
+DESC="starman"
+
+ROOTDIR="/var/www"
+DSTDIR="$ROOTDIR/StatisticsCollector"
+PID="$ROOTDIR/pid/$NAME.pid"
+PSGI="$DSTDIR/statisticscollector.psgi"
+PORT="127.0.0.1:5000"
+
+PERLDIR="$ROOTDIR/perl5/perlbrew/perls/perl-5.14.2"
+STARMAN="$PERLDIR/bin/starman"
+
+case "$1" in
+    start)
+        echo -n "Starting $DESC: "
+        PERL5LIB=$DSTDIR/lib $STARMAN \
+            --listen=$PORT --daemonize --pid=$PID \
+            --user www-data --group www-data \
+            $PSGI
+        echo "$NAME."
+        ;;
+
+    stop)
+        echo -n "Stopping $DESC: "
+        kill `cat $PID`
+        echo "$NAME."
+        ;;
+
+    restart)
+        echo -n "Restarting $DESC: "
+        kill `cat $PID`
+        sleep 1
+        PERL5LIB=$DSTDIR/lib $STARMAN \
+            --listen=$PORT --daemonize --pid=$PID \
+            --user www-data --group www-data \
+            $PSGI
+        echo "$NAME."
+        ;;
+
+    status)
+        if [ -f $PID ] ; then 
+            echo "$NAME is running."
+        else
+            echo "$NAME is not running."
+        fi
+        ;;
+
+    *)
+        echo "Usage: $NAME { start | stop | restart | status }"
+        exit 1
+        ;;
+esac
