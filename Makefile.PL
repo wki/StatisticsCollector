@@ -19,8 +19,12 @@ requires 'namespace::autoclean';
 requires 'Config::General';
 requires 'Proc::Class';
 requires 'DBIx::Class::DeploymentHandler';
+requires 'DBIx::Class::Candy';
+requires 'DBD::Pg';
+requires 'DateTime::Format::Pg';
 requires 'Catalyst::View::ByCode';
 requires 'Catalyst::Controller::Combine';
+requires 'Catalyst::Model::DBIC::Schema';
 requires 'Imager';
 requires 'Imager::Graph';
 
@@ -28,6 +32,7 @@ test_requires 'Test::More' => '0.88';
 test_requires 'Test::Exception';
 test_requires 'Test::DBIx::Class';
 
+catalyst_ignore('.*');
 catalyst;
 
 install_script glob('script/*.pl');

@@ -17,7 +17,6 @@ use Catalyst::Runtime 5.80;
 #                 directory
 
 use Catalyst qw/
-    ConfigLoader
     Static::Simple
 /;
 
@@ -38,6 +37,8 @@ __PACKAGE__->config(
     name => 'StatisticsCollector',
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
+    
+    default_view => 'ByCode',
 );
 
 # Start the application

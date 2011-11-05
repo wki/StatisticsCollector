@@ -1,0 +1,40 @@
+Infos about deployment etc.
+---------------------------
+
+0) Web Host:      93.186.200.140
+   moniker:       myloc
+
+1) Web Server:    nginx
+   DocRoot:       /var/www/nginx-default
+   User/Group:    www-data:www-data
+   Home:          /var/www
+   Reverse Proxy: -> 127.0.0.1:5000
+
+2) Perl: Perlbrew
+   Install Dir: /var/www/perl5/perlbrew
+   Binaries:    ./bin/*, ./perls/*/bin/*
+   Using Perl:  5.14.2
+
+3) Catalyst App
+   Root Dir:      /var/www/StatisticsCollector
+   Daemon Script: ./script/statisticscollector_daemon.pl
+   Port:          127.0.0.1:5000
+   Deploy Script: ./script/rsync_to_webserverver.sh
+   Run as user:   www-data/www-data
+
+
+
+------ nginx config:
+server {
+    listen 81 default;
+    server_name statistics;
+    access_log /var/log/nginx/statistics.access.log;
+    location / {
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Port 81; #this is important for Catalyst Apps!
+        proxy_pass http://localhost:5000;
+    }
+}
