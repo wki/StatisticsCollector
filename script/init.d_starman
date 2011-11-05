@@ -15,7 +15,7 @@ case "$1" in
     start)
         echo -n "Starting $DESC: "
         PERL5LIB=$DSTDIR/lib $STARMAN \
-            --listen=$PORT --daemonize --pid=$PID \
+            --listen $PORT --daemonize --pid $PID \
             --user www-data --group www-data \
             $PSGI
         echo "$NAME."
@@ -32,7 +32,7 @@ case "$1" in
         kill `cat $PID`
         sleep 1
         PERL5LIB=$DSTDIR/lib $STARMAN \
-            --listen=$PORT --daemonize --pid=$PID \
+            --listen $PORT --daemonize --pid $PID \
             --user www-data --group www-data \
             $PSGI
         echo "$NAME."
