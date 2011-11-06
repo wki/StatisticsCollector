@@ -6,11 +6,30 @@ BEGIN { extends 'Catalyst::Controller::REST' }
 
 =head1 NAME
 
-StatisticsCollector::Controller::Sensor - Catalyst Controller
+StatisticsCollector::Controller::Sensor - REST Interface
 
 =head1 DESCRIPTION
 
-Catalyst Controller.
+allows query or adding measures for sensors
+
+=over
+
+=item GET /sensor/a/b/c
+
+retrieves the latest measure for a sensor
+
+=item PUT /sensor/a/b/c
+
+adds a new measure for this sensor. The POST params must contain a parameter
+named C<value>.
+
+=back
+
+Example:
+
+    curl -XGET http://93.186.200.140:81/sensor/erlangen/heizung/temperatur
+    curl -XPOST http://93.186.200.140:81/sensor/erlangen/heizung/temperatur -F value=12
+
 
 =head1 METHODS
 

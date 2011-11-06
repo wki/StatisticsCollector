@@ -3,7 +3,6 @@ appdir=`dirname $0`/..
 dstdir=/var/www/StatisticsCollector
 cd $appdir
 
-set -x
 rsync -vcr  --delete \
   --exclude blib --exclude inc --exclude '.git*' \
   --exclude 'META.*' --exclude 'MYMETA.*' \

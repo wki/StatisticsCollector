@@ -1,23 +1,23 @@
 #!/bin/sh
+
 NAME="starman"
 DESC="starman"
 
 ROOTDIR="/var/www"
-DSTDIR="$ROOTDIR/StatisticsCollector"
-PID="$ROOTDIR/pid/$NAME.pid"
-PSGI="$DSTDIR/statisticscollector.psgi"
-PORT="127.0.0.1:5000"
+INSTALLDIR="$ROOTDIR/StatisticsCollector"
+LIBS="$INSTALLDIR/lib"
 
 PERLDIR="$ROOTDIR/perl5/perlbrew/perls/perl-5.14.2"
 STARMAN="$PERLDIR/bin/starman"
+PID="$ROOTDIR/pid/$NAME.pid"
+PORT="127.0.0.1:5000"
+OPTS="--listen $PORT --pid $PID --daemonize --user www-data --group www-data"
+PSGI="$INSTALLDIR/statisticscollector.psgi"
 
 case "$1" in
     start)
         echo -n "Starting $DESC: "
-        PERL5LIB=$DSTDIR/lib $STARMAN \
-            --listen $PORT --daemonize --pid $PID \
-            --user www-data --group www-data \
-            $PSGI
+        PERL5LIB=$LIBS $STARMAN $OPTS $PSGI
         echo "$NAME."
         ;;
 
@@ -31,10 +31,7 @@ case "$1" in
         echo -n "Restarting $DESC: "
         kill `cat $PID`
         sleep 1
-        PERL5LIB=$DSTDIR/lib $STARMAN \
-            --listen $PORT --daemonize --pid $PID \
-            --user www-data --group www-data \
-            $PSGI
+        PERL5LIB=$LIBS $STARMAN $OPTS $PSGI
         echo "$NAME."
         ;;
 
