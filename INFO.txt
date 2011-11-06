@@ -38,3 +38,32 @@ server {
         proxy_pass http://localhost:5000;
     }
 }
+
+
+------- order of deployment: ### FIXME: need more text
+
+- mkdir /var/www/statistics
+
+- create new user
+  adduser --group --shell /bin/bash --home /var/www/statistics www-statistics
+  !!!set password!!!
+
+- login as www-statistics
+
+- get perlbrew
+
+- prepare ~www-statistics/.profile
+
+- compile perl
+
+- add cpanm inside perlbrew
+
+- install Catalyst::Runtime, Catalyst::Devel
+
+- deploy app
+
+- cpanm --installdeps .
+
+- modify init.d script
+
+- start daemon
