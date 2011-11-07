@@ -1,6 +1,8 @@
 Infos about deployment etc.
 ---------------------------
 
+
+
 0) Web Host:      93.186.200.140
    moniker:       myloc
 
@@ -11,16 +13,18 @@ Infos about deployment etc.
    Reverse Proxy: -> 127.0.0.1:5000
 
 2) Perl: Perlbrew
-   Install Dir: /var/www/perl5/perlbrew
-   Binaries:    ./bin/*, ./perls/*/bin/*
-   Using Perl:  5.14.2
+   User/Group:    sites:sites
+   Install Dir:   /home/sites/perl5/perlbrew
+   Binaries:      ./bin/*, ./perls/*/bin/*
+   Using Perl:    5.14.2
 
 3) Catalyst App
-   Root Dir:      /var/www/StatisticsCollector
-   Daemon Script: ./script/statisticscollector_daemon.pl
+   Root Dir:      /home/sites/StatisticsCollector
+   User/Group:    sites:sites
+   Perl Libs:     ./perl5lib
+   Init-Script:   ./script/init.d_starman
    Port:          127.0.0.1:5000
-   Deploy Script: ./script/rsync_to_webserverver.sh
-   Run as user:   www-data/www-data
+   Deploy Script: ./script/statisticscollector_rsync.sh
 
 
 
