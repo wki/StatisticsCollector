@@ -3,15 +3,15 @@
 NAME="starman"
 DESC="starman"
 
-ROOTDIR="/var/www"
+ROOTDIR="/home/sites"
 INSTALLDIR="$ROOTDIR/StatisticsCollector"
-LIBS="$INSTALLDIR/lib"
+LIBS="$INSTALLDIR/perl5lib/lib/perl5:$INSTALLDIR/lib"
 
 PERLDIR="$ROOTDIR/perl5/perlbrew/perls/perl-5.14.2"
-STARMAN="$PERLDIR/bin/starman"
+STARMAN="$INSTALLDIR/perl5lib/bin/starman"
 PID="$ROOTDIR/pid/$NAME.pid"
 PORT="127.0.0.1:5000"
-OPTS="--listen $PORT --pid $PID --daemonize --user www-data --group www-data"
+OPTS="--listen $PORT --pid $PID --daemonize --user sites --group sites"
 PSGI="$INSTALLDIR/statisticscollector.psgi"
 
 case "$1" in

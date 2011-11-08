@@ -44,17 +44,21 @@ server {
 }
 
 
-------- order of deployment: ### FIXME: need more text
+------- order of deployment:
 
 # adduser --shell /bin/bash sites
 # su - sites
 
+$ curl -kL http://xrl.us/perlbrewinstall | bash
+$ . perl5/perlbrew/etc/bashrc
 $ cat >> .profile
 . ~/perl5/perlbrew/etc/bashrc
 ^D
 $ perlbrew init
 $ perlbrew install 5.14.2
 $ perlbrew install-cpanm
+
+$ mkdir pid
 
 $ mkdir <name_of_site>
 $ cd <name_of_site>
