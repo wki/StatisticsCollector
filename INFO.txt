@@ -46,28 +46,25 @@ server {
 
 ------- order of deployment: ### FIXME: need more text
 
-- mkdir /var/www/statistics
+# adduser --shell /bin/bash sites
+# su - sites
 
-- create new user
-  adduser --group --shell /bin/bash --home /var/www/statistics www-statistics
-  !!!set password!!!
+$ cat >> .profile
+. ~/perl5/perlbrew/etc/bashrc
+^D
+$ perlbrew init
+$ perlbrew install 5.14.2
+$ perlbrew install-cpanm
 
-- login as www-statistics
+$ mkdir <name_of_site>
+$ cd <name_of_site>
+$ mkdir perl5libs
+$ cpanm -L perl5libs Catalyst::Runtime Catalyst::Devel
 
-- get perlbrew
+(deploy app)
 
-- prepare ~www-statistics/.profile
+$ cpanm -L perl5libs --installdeps .
 
-- compile perl
+(modify init.d script)
 
-- add cpanm inside perlbrew
-
-- install Catalyst::Runtime, Catalyst::Devel
-
-- deploy app
-
-- cpanm --installdeps .
-
-- modify init.d script
-
-- start daemon
+# /etc/init.d/site_deamon start
