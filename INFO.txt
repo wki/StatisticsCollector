@@ -58,8 +58,8 @@ $ perlbrew install-cpanm
 
 $ mkdir <name_of_site>
 $ cd <name_of_site>
-$ mkdir perl5libs
-$ cpanm -L perl5libs Catalyst::Runtime Catalyst::Devel
+$ mkdir perl5lib
+$ cpanm -L perl5lib Catalyst::Runtime Catalyst::Devel
 
 (deploy app)
 
