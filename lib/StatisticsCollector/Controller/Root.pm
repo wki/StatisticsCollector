@@ -1,5 +1,6 @@
 package StatisticsCollector::Controller::Root;
 use Moose;
+use YAML;
 use namespace::autoclean;
 
 use mro 'dfs';
@@ -53,6 +54,17 @@ Attempt to render a view, if needed.
 =cut
 
 sub end : ActionClass('RenderView') {}
+
+=head2 save_measures
+
+=cut
+
+sub save_measures :Global {
+    my ( $self, $c ) = @_;
+    
+    $c->log->error('save measures: ', Dump($c->req->params));
+    $c->response->body('OK');
+}
 
 =head1 AUTHOR
 
