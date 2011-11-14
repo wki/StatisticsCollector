@@ -69,6 +69,7 @@ from ( /* mid */
                              and m.ending_at <= range.ending_at
                              and m.sensor_id = ?)
 group by range.starting_at, range.ending_at
+order by range.starting_at
 });
 
 1;

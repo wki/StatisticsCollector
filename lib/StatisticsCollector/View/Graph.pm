@@ -33,19 +33,30 @@ sub process {
       || die "Error: $!";
 
     my $graph = Imager::Graph::StackedColumn->new();
+    
+    my $y_max = $c->stash->{y_max} // 40;
+    $y_max = int(($y_max + 9) / 10) * 10;
+    
+    my $y_min = $c->stash->{y_min} // 0;
+    $y_min = int(($y_min - 9) / 10) * 10;
+    $y_min = 0 if $y_min > 0;
+    
+    my $ticks = int(($y_max - $y_min) / 5) + 1;
 
     $graph->add_data_series( @{$_} ) for @{ $c->stash->{data} };
 
+    $graph->set_style('fount_lin');
     $graph->show_horizontal_gridlines();
-    $graph->set_y_tics(5);
+    $graph->use_automatic_axis();
+    $graph->set_y_max($y_max);
+    $graph->set_y_min($y_min);
+    $graph->set_y_tics($ticks);
+    $graph->set_image_width($c->stash->{width}  // 600);
+    $graph->set_image_height($c->stash->{height}  // 400);
 
     my $img = $graph->draw(
-        image_width    => $c->stash->{width}  // 600,
-        image_height   => $c->stash->{height} // 400,
         features       => [ "horizontal_gridlines", "areamarkers" ],
         column_padding => 20,
-        y_min          => 0,
-        y_max          => 20,
         labels         => $c->stash->{labels},
         title          => $c->stash->{title} // 'Untitled',
         font           => $font,

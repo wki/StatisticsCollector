@@ -57,12 +57,26 @@ sub end : ActionClass('RenderView') {}
 
 =head2 save_measures
 
+a simple and currently hard coded getter for measures.
+
+Receives all measures of a single arduino board as name/value pairs.
+Temperatures of -99 indicate missing values.
+
 =cut
 
 sub save_measures :Global {
     my ( $self, $c ) = @_;
     
-    $c->log->error('save measures: ', Dump($c->req->params));
+    foreach my $name (keys(%{$c->req->params})) {
+        my $value = $c->req->params->{$name};
+        next if $value < -50;
+        
+        my $sensor = $c->model('DB::Sensor')
+                       ->find_or_create({name => "erlangen/\L$name\E/temperatur"})
+            or next;
+        
+        $sensor->add_measure($value);
+    }
     $c->response->body('OK');
 }
 
