@@ -32,11 +32,10 @@
 .graph_container .image {
     position: absolute;
     margin-left: -600px;
-    /* top: 0px;
-      right: 0px; */
     width: 600px;
     height: 400px;
     display: none;
+    -webkit-box-shadow: 3px 3px 6px rgba(0,0,0,1);
 }
 
 .graph_container:hover .image {
