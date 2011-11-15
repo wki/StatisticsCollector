@@ -14,3 +14,31 @@
 .sorted.desc {
     background: url(/static/images/bullet_arrow_down.png) top left no-repeat;
 }
+
+/* overwritten things from oocss */
+.data th,
+.data td {
+    padding: 3px 10px;
+}
+
+.graph_container {
+    float: left;
+    postition: relative;
+    margin-top: 10px;
+    width: 40px;
+    height: 32px;
+}
+
+.graph_container .image {
+    position: absolute;
+    margin-left: -600px;
+    /* top: 0px;
+      right: 0px; */
+    width: 600px;
+    height: 400px;
+    display: none;
+}
+
+.graph_container:hover .image {
+    display: block;
+}

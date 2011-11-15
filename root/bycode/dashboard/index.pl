@@ -135,11 +135,12 @@ sub show_sensor_table {
         thead {
             trow {
                 th(width => '45%') { sortable_header(name => 'Sensor') };
-                th(width => '20%') { sortable_header(latest => 'Latest Measure') };
-                th(width => '10%') { sortable_header(value => 'value') };
-                th(width => '15%') { 'min/avg/max' };
-                th(width =>  '5%') { '#' };
-                th(width =>  '5%') { '' };
+                th(width => '15%') { sortable_header(latest => 'Latest Measure') };
+                th(width =>  '5%') { sortable_header(value => 'value') };
+                th(width => '12%') { 'min/avg/max' };
+                th(width =>  '4%') { '#' };
+                th(width => '15%') { 'graph' };
+                th(width =>  '4%') { '' };
             };
         };
         tbody {
@@ -185,7 +186,7 @@ sub show_data_row {
                 ? $latest->latest_value
                 : '-'
         };
-        tcol { 
+        tcol {
             class '+negative'
                 if $latest 
                    && ($latest->min_value_gt_alarm || $latest->max_value_lt_alarm);
@@ -201,9 +202,18 @@ sub show_data_row {
             $latest
                 ? $latest->nr_values
                 : '-'
-            
         };
-        tcol.txtC {
+        tcol {
+            div.graph_container._show_graph {
+                img.image( data_href => c->uri_for_action('graph/hours', [$sensor->id], 24) );
+                img(src => '/static/images/clock.png');
+            };
+            div.graph_container._show_graph {
+                img.image( data_href => c->uri_for_action('graph/days', [$sensor->id], 14) );
+                img(src => '/static/images/date.png');
+            };
+        };
+        tcol.txtL {
             if (!$latest) {
                 img(src => '/static/images/clock_error.png');
             } elsif ($latest->has_alarm) {

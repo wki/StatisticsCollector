@@ -18,7 +18,7 @@ __PACKAGE__->config(
     #     'jquery.metadata'     => 'jquery-1.6.2'
     #     'jquery.form-2.36'    => 'jquery-1.6.2'
     #     'jquery.validate-1.6' => [qw(jquery.form-2.36 jquery.metadata)]
-        site                  => [ qw(jquery) ],
+        site                  => [ qw(jquery-1.7) ],
     },
     #
     #   optionally specify replacements to get done
