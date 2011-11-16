@@ -1,10 +1,10 @@
 /* site.js */
 
 $(function() {
-    // $('._submit_on_change').change(function() {
-    //     console.log('changed, must submit');
-    //     $(this).parent('form').get(0).submit();
-    // });
+    $('._submit_on_change').on('change', function() {
+        console.log('changed, must submit');
+        $(this).parent('form').get(0).submit();
+    });
     
     $('._show_graph').on('hover', function() {
         var img = $(this).find('img.image[data-href]');

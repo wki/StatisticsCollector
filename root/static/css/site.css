@@ -1,5 +1,23 @@
 /* site.css */
 
+/* a replacement for .excerpt module */
+.topic {
+    border-radius: 6px;
+    border: 1px solid rgb(195,195,195);
+    -webkit-box-shadow: 0px 1px 6px rgba(0,0,0,1);
+}
+
+.topic .top { height:1px; }
+.topic .bottom { height:6px;margin-top:-6px; }/* margin top equal to - height of bottom */
+.topic .br,
+.topic .bl { height:12px;margin-top:-6px; }/* margin top = bottom height - corner height */
+
+/* overwritten from oocss */
+.section { border-top-left-radius: 6px; border-top-right-radius: 6px; }
+
+
+
+
 .sortable,
 .sorted {
     color: #000000 !important;
@@ -35,7 +53,8 @@
     width: 600px;
     height: 400px;
     display: none;
-    -webkit-box-shadow: 3px 3px 6px rgba(0,0,0,1);
+    border-radius: 6px;
+    -webkit-box-shadow: 0px 1px 6px rgba(0,0,0,1);
 }
 
 .graph_container:hover .image {

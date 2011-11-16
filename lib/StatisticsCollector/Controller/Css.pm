@@ -7,7 +7,7 @@ use List::Util 'first';
 BEGIN { extends 'Catalyst::Controller::Combine' }
 
 # uncomment if desired and do not import namespace::autoclean!
-# use CSS::Minifier::XS qw(minify);
+use CSS::Minifier::XS ();
 
 __PACKAGE__->config(
     #   optional, defaults to static/<<action_namespace>>
@@ -88,7 +88,7 @@ sub minify :Private {
     
     $sass->waitpid;
     
-    return $text;
+    return CSS::Minifier::XS::minify($text);
 }
 
 # sub minify :Private {

@@ -4,7 +4,7 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller::Combine' }
 
 # uncomment if desired and do not import namespace::autoclean!
-# use JavaScript::Minifier::XS qw(minify);
+use JavaScript::Minifier::XS qw(minify);
 
 __PACKAGE__->config(
     #   optional, defaults to static/<<action_namespace>>

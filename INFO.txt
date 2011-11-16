@@ -33,6 +33,18 @@ server {
     listen 81 default;
     server_name statistics;
     access_log /var/log/nginx/statistics.access.log;
+    
+    # CSS is served statically
+    location /css/ {
+        alias /home/sites/StatisticsCollector/root/_static_css/;
+    }
+    
+    # JS is served statically
+    location /js/ {
+        alias /home/sites/StatisticsCollector/root/_static_js/;
+    }
+    
+    # everything else is passed to Catalyst
     location / {
         proxy_set_header Host $http_host;
         proxy_set_header X-Forwarded-Host $http_host;

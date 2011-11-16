@@ -27,6 +27,8 @@ requires 'Catalyst::Controller::Combine';
 requires 'Catalyst::Model::DBIC::Schema';
 requires 'Imager';
 requires 'Imager::Graph';
+requires 'CSS::Minifier::XS';
+requires 'JavaScript::Minifier::XS';
 
 test_requires 'Test::More' => '0.88';
 test_requires 'Test::Exception';

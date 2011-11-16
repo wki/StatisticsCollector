@@ -4,3 +4,5 @@ Makefile
 blib/
 inc/
 script/dbicdh/
+.DS_Store
+root/_*/

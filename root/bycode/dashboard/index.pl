@@ -228,7 +228,7 @@ sub show_data_row {
 }
 
 template {
-    mod.complex.excerpt {
+    mod.complex.topic {
         div.hd.section { 
             h3 { 'Latest Measures' } 
         };
