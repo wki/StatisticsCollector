@@ -228,8 +228,8 @@ sub show_data_row {
 }
 
 template {
-    mod.complex.topic {
-        div.hd.section { 
+    mod.topic {
+        div.hd.section.phm { 
             h3 { 'Latest Measures' } 
         };
         div.bd {
