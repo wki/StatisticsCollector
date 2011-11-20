@@ -270,6 +270,35 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     }
 }
 
+# check low-level calculation of specificity
+{
+    my $sensor_mask = 'abc';
+    local *StatisticsCollector::Schema::Result::AlarmCondition::sensor_mask =
+        sub { return $sensor_mask };
+    
+    my $ac = StatisticsCollector::Schema::Result::AlarmCondition->new();
+    is $ac->sensor_mask, 'abc', 'mocking of mask works';
+    
+    is $ac->calculate_specificity_from_mask, 8, 'mask w/o % is 8';
+    
+    $sensor_mask = '%/keller/temp';
+    is $ac->calculate_specificity_from_mask, 7, 'mask %/a/b is 7';
+    $sensor_mask = 'bla/%/temp';
+    is $ac->calculate_specificity_from_mask, 6, 'mask a/%/b is 6';
+    $sensor_mask = 'bla/foo/%';
+    is $ac->calculate_specificity_from_mask, 5, 'mask a/b/% is 5';
+    
+    $sensor_mask = '%/%/temp';
+    is $ac->calculate_specificity_from_mask, 4, 'mask %/%/a is 4';
+    $sensor_mask = '%/xxx/%';
+    is $ac->calculate_specificity_from_mask, 3, 'mask %/b/$ is 3';
+    $sensor_mask = 'bla/%/%';
+    is $ac->calculate_specificity_from_mask, 2, 'mask c/%/% is 2';
+    
+    $sensor_mask = '%/%/%';
+    is $ac->calculate_specificity_from_mask, 1, 'mask %/%/% is 1';
+}
+
 # add some alarms and see if latest measure reports them
 {
 
@@ -304,7 +333,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     $alarm1 = AlarmCondition->create(
         {
             sensor_mask    => 'non/sense/mask',    # should never match
-            severity_level => 500,
+            severity_level => 5,
         }
     );
     is AlarmCondition->count, 1, 'one alarm condition defined';
@@ -361,7 +390,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         min_value_gt_alarm           => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'min-gt alarm is fired for values outside range';
@@ -371,7 +400,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         min_value_gt_alarm           => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'min-gt alarm is fired for edge values outside range';
@@ -381,7 +410,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         min_value_gt_alarm           => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'min-gt alarm is fired for equal values';
@@ -406,7 +435,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         latest_value_gt_alarm        => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'min-gt alarm is fired for values outside range';
@@ -416,7 +445,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         latest_value_gt_alarm        => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'min-gt alarm is fired for edge values outside range';
@@ -426,7 +455,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         latest_value_gt_alarm        => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'min-gt alarm is fired for equal values';
@@ -451,7 +480,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         max_value_lt_alarm           => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'max-lt alarm is fired for values outside range';
@@ -461,7 +490,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         max_value_lt_alarm           => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'max-lt alarm is fired for edge values outside range';
@@ -471,7 +500,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         max_value_lt_alarm           => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'max-lt alarm is fired for equal values';
@@ -496,7 +525,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         latest_value_lt_alarm        => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'max-lt alarm is fired for values outside range';
@@ -506,7 +535,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         latest_value_lt_alarm        => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'max-lt alarm is fired for edge values outside range';
@@ -516,7 +545,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         latest_value_lt_alarm        => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'max-lt alarm is fired for equal values';
@@ -546,7 +575,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         measure_age_alarm            => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'age alarm is fired for ages out of range';
@@ -556,7 +585,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         measure_age_alarm            => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'age alarm is fired for ages just out of range';
@@ -581,7 +610,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     my $alarm2 = AlarmCondition->create(
         {
             sensor_mask    => 'foo/bar/mask',    # should never match
-            severity_level => 300,
+            severity_level => 3,
         }
     );
     is AlarmCondition->count, 2, 'two alarm conditions defined';
@@ -590,7 +619,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         measure_age_alarm            => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 1,
       },
       'age alarm is fired for ages out of range, nonsense alarm ignored';
@@ -600,7 +629,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
       {
         %sensor1_measure,
         measure_age_alarm            => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 2,
       },
       'age alarm is still fired, other alarm not fired';
@@ -611,18 +640,18 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
         %sensor1_measure,
         measure_age_alarm            => 1,
         min_value_gt_alarm           => 1,
-        max_severity_level           => 500,
+        max_severity_level           => 5,
         nr_matching_alarm_conditions => 2,
       },
       'age alarm and min_value_gt alarm is fired';
 
-    $alarm2->update( { severity_level => 900 } );
+    $alarm2->update( { severity_level => 9 } );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
         measure_age_alarm            => 1,
         min_value_gt_alarm           => 1,
-        max_severity_level           => 900,
+        max_severity_level           => 9,
         nr_matching_alarm_conditions => 2,
       },
       'reported severity level is maximum';

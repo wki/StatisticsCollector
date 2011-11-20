@@ -1,5 +1,6 @@
 package StatisticsCollector::Schema::Result::AlarmCondition;
-use DBIx::Class::Candy;
+use feature ':5.10';
+use DBIx::Class::Candy -components => [ qw(DynamicDefault) ];
 
 table 'alarm_condition';
 
@@ -57,12 +58,74 @@ column max_value_lt => {
 };
 
 #
-# TODO: do we need a severity (0=INFO/100=WARNING/200=ERROR/300=FATAL) ???
+# TODO: do we need a severity (1=INFO/2=WARNING/3=ERROR/4=FATAL) ???
 #
 column severity_level => {
     data_type => 'int',
     is_nullable => 0,
-    default_value => 200,
+    default_value => 2,
 };
 
+#
+# TODO: do we need a specificity (order of testing) ???
+#
+column specificity => {
+    data_type => 'int',
+    is_nullable => 0,
+    default_value => 0,
+    dynamic_default_on_create => \&calculate_specificity_from_mask,
+    dynamic_default_on_update => \&calculate_specificity_from_mask,
+};
+
+sub calculate_specificity_from_mask {
+    my $self = shift;
+    
+    my $specificity = 8;
+    
+    given ($self->sensor_mask) {
+        $specificity = 7 when m{\A % / [^%]+ \z}xms;
+        $specificity = 6 when m{\A [^%]+ / % / [^%]+ \z}xms;
+        $specificity = 5 when m{\A [^%]+ / % \z}xms;
+        $specificity = 4 when m{\A % / % / [^%]+ \z}xms;
+        $specificity = 3 when m{\A % / [^%]+ / % \z}xms;
+        $specificity = 2 when m{\A [^%]+ / % / % \z}xms;
+        $specificity = 1 when m{\A % / % / % \z}xms;
+    }
+    
+    return $specificity;
+}
+
 1;
+
+__END__
+
+order of alarm conditions
+-------------------------
+
+most important (most specific)
+  8: erlangen/keller/temperatur
+
+medium specific
+  7: %/keller/temperatur
+  6: erlangen/%/temperatur
+  5: erlangen/keller/%
+
+low specific
+  4: %/%/temperatur
+  3: %/keller/%
+  2: erlangen/%/%
+
+unspecific
+  1: %/%/%
+
+not defined
+  0: ?
+
+
+testing
+-------
+
+- search all alarm conditions with matching masks
+- sort by severity (desc) and then by specificity (desc)
+- for every severity only keep the first (highest specificity value)
+- the highest severity giving an alarm wins
