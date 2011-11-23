@@ -6,3 +6,4 @@ inc/
 script/dbicdh/
 .DS_Store
 root/_*/
+dump/*.sql
