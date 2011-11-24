@@ -96,7 +96,18 @@ __PACKAGE__->result_source_instance->view_definition(q{
                            count(distinct ac.alarm_condition_id) as nr_matching_alarm_conditions
                     from measure m
                          join sensor s on (m.sensor_id = s.sensor_id)
-                         left join alarm_condition ac on (s.name like ac.sensor_mask)
+                         -- left join alarm_condition ac on (s.name like ac.sensor_mask)
+                         left join (select x.*
+                                    from (select s.sensor_id,
+                                                 ac.*,
+                                                 first_value(ac.alarm_condition_id) over w best_alarm_condition_id
+                                          from sensor s 
+                                               join alarm_condition ac on (s.name like ac.sensor_mask)
+                                          window w as (partition by s.sensor_id, ac.severity_level 
+                                                       order by ac.severity_level desc, ac.specificity desc)
+                                         ) x
+                                    where x.alarm_condition_id = x.best_alarm_condition_id
+                                   ) ac on ac.sensor_id = s.sensor_id
                     group by m.measure_id
                    ) m on (sm.latest_measure_id = m.measure_id)
 });

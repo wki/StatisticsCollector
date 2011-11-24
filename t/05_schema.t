@@ -273,6 +273,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
 # check low-level calculation of specificity
 {
     my $sensor_mask = 'abc';
+    no warnings 'redefine';
     local *StatisticsCollector::Schema::Result::AlarmCondition::sensor_mask =
         sub { return $sensor_mask };
     
@@ -655,6 +656,70 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
         nr_matching_alarm_conditions => 2,
       },
       'reported severity level is maximum';
+    
+    # multiple alarms let the most-specific fire
+    $alarm2->update( { severity_level => 5 } );
+    is_fields $sensor1->discard_changes->latest_measure,
+      {
+        %sensor1_measure,
+        measure_age_alarm            => 1,
+        min_value_gt_alarm           => 0,
+        max_severity_level           => 5,
+        nr_matching_alarm_conditions => 1,
+      },
+      'same severity level reports one';
+    
+    $alarm1->update( { max_measure_age_minutes => undef } );
+    is_fields $sensor1->discard_changes->latest_measure,
+      {
+        %sensor1_measure,
+        measure_age_alarm            => 0,
+        min_value_gt_alarm           => 0,
+        max_severity_level           => undef,
+        nr_matching_alarm_conditions => 1,
+      },
+      'most specific alarm keeps quiet if not firing';
+    
+
+    ### multiple alarms let the most-specific of highest severity level fire
+    my $alarm3 = AlarmCondition->create(
+          {
+              sensor_mask    => '%/%/temperatur',
+              min_value_gt   => 30,
+              severity_level => 2,
+          }
+      );
+    is_fields $sensor1->discard_changes->latest_measure,
+      {
+        %sensor1_measure,
+        measure_age_alarm            => 0,
+        min_value_gt_alarm           => 1,
+        max_severity_level           => 2,
+        nr_matching_alarm_conditions => 2,
+      },
+      'lower severity level reports if higher keeps silent';
+    
+    $alarm1->update( { min_value_gt => 30 } );
+    is_fields $sensor1->discard_changes->latest_measure,
+      {
+        %sensor1_measure,
+        measure_age_alarm            => 0,
+        min_value_gt_alarm           => 1,
+        max_severity_level           => 5,
+        nr_matching_alarm_conditions => 2,
+      },
+      'higher severity alarm overrides lower severity one if fired';
+    
+    $alarm3->update( { sensor_mask => 'erlangen/keller/temperatur' } );
+    is_fields $sensor1->discard_changes->latest_measure,
+      {
+        %sensor1_measure,
+        measure_age_alarm            => 0,
+        min_value_gt_alarm           => 1,
+        max_severity_level           => 5,
+        nr_matching_alarm_conditions => 2,
+      },
+      'higher severity alarm overrides more specific lower severity one if fired';
 }
 
 done_testing;
