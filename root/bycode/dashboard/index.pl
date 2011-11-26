@@ -144,9 +144,7 @@ sub show_sensor_table {
             };
         };
         tbody {
-            foreach my $sensor (@{stash->{sensors}}) {
-                show_data_row($sensor);
-            }
+            show_data_row($_) for (@{stash->{sensors}});
         };
     };
 }

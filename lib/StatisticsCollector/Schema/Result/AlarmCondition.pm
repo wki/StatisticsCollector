@@ -10,6 +10,14 @@ primary_column alarm_condition_id => {
 };
 
 #
+# an optional meaningful name
+#
+column name => {
+    data_type => 'text',
+    is_nullable => 1,
+};
+
+#
 # a valid likehood mask '%/whatever/temperature'
 #
 column sensor_mask => {
