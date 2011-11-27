@@ -132,6 +132,22 @@ sub _compose_search_criteria {
         : ();
 }
 
+=head2 graph_demo
+
+a simple demonstration for generating graphs in HTML instead of PNG
+
+a PNG sized 600 x 400 px is about 37K
+
+the HTML Markup (excluding CSS) is 1-3K
+
+a pure-JS version would even be smaller
+
+=cut
+
+sub graph_demo :Local {
+    my ($self, $c) = @_;
+}
+
 =head1 AUTHOR
 
 Wolfgang Kinkeldei
