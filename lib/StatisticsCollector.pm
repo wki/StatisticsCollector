@@ -40,6 +40,9 @@ __PACKAGE__->config(
 
     default_view => 'ByCode',
 
+    'View::Chart' => {
+        format => 'svg',
+    },
 );
 
 # Start the application

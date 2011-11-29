@@ -32,12 +32,12 @@ page_size:       default 25
 
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
-    
+
     my ($page_size, $page_nr) = $self->_get_page_size_and_page_nr($c);
     my $order_by              = $self->_determine_order_column($c);
     my @search_criteria       = $self->_compose_search_criteria($c);
-    
-    my $search_rs = 
+
+    my $search_rs =
         $c->model('DB::Sensor')
           ->search(
               {
@@ -49,14 +49,14 @@ sub index :Path :Args(0) {
                   page     => $page_nr,
                   rows     => $page_size,
               });
-    
+
     # we must fix our pager and resultset if requested page is over limit
     my $pager = $search_rs->pager;
     if ($page_nr > $pager->last_page) {
         $c->req->params->{page_nr} = $pager->last_page;
         $search_rs = $search_rs->search( undef, { page => $pager->last_page } );
     }
-    
+
     $c->stash(
         sensors => [ $search_rs->all ],
         pager   => $pager,
@@ -65,22 +65,22 @@ sub index :Path :Args(0) {
 
 sub _get_page_size_and_page_nr {
     my ($self, $c) = @_;
-    
+
     my $page_size = $c->req->params->{page_size};
     $page_size = 25 if !$page_size || $page_size < 10 || $page_size > 100;
-    
+
     my $page_nr   = $c->req->params->{page_nr};
     $page_nr = 1 if !$page_nr || $page_nr < 1 || $page_nr > 10000;
-    
+
     return ($page_size, $page_nr);
 }
 
 sub _determine_order_column {
     my ($self, $c) = @_;
-    
+
     my $sort = $c->req->params->{sort} // 'name';
     my $sort_desc = $c->req->params->{sort_desc} ? 1 : 0;
-    
+
     my %sort_field_for = (
         name   => 'me.name',
         latest => 'latest_measure.updated_at',
@@ -88,18 +88,18 @@ sub _determine_order_column {
     );
     $sort = 'name' if !exists $sort_field_for{$sort};
     $c->req->params->{sort} = $sort;
-    
+
     return $sort_desc
         ? { -desc => $sort_field_for{$sort} }
         : $sort_field_for{$sort};
-    
+
 }
 
 sub _compose_search_criteria {
     my ($self, $c) = @_;
-    
+
     my @search;
-    
+
     push @search,
          'me.name' => { -like => $c->req->params->{filter_name1} . '/%/%' }
         if $c->req->params->{filter_name1};
@@ -109,7 +109,7 @@ sub _compose_search_criteria {
     push @search,
          'me.name' => { -like => '%/%/' . $c->req->params->{filter_name3} }
         if $c->req->params->{filter_name3};
-    
+
     if (my $special = $c->req->params->{filter_special}) {
         push @search,
              'latest_measure.measure_id' => undef
@@ -126,7 +126,7 @@ sub _compose_search_criteria {
              ]
             if $special eq 'range';
     }
-    
+
     return @search
         ? (-and => \@search)
         : ();
@@ -146,6 +146,34 @@ a pure-JS version would even be smaller
 
 sub graph_demo :Local {
     my ($self, $c) = @_;
+}
+
+sub demo :Local {
+    my ($self, $c) = @_;
+    
+    $c->res->body(q{<img src="/dashboard/svg_demo" width="200" height="200" />});
+}
+
+=head2 svg_demo
+
+=cut
+
+sub svg_demo :Local {
+    my ($self, $c) = @_;
+
+    $c->stash->{chart_title} = 'Sales data'; # optional
+
+    $c->stash->{chart_type} = 'Bar'; # or Pie/Line/BarHorizontal
+
+    $c->stash->{chart_conf} = {
+        height  => 400,
+        width   => 600
+    };
+
+    $c->stash->{chart_fields} = [ qw(Jan Feb March ) ];
+    $c->stash->{chart_data} = [ 120, 102, 100];
+
+    $c->forward($c->view('SVG'));
 }
 
 =head1 AUTHOR
