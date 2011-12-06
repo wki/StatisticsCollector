@@ -150,7 +150,7 @@ sub graph_demo :Local {
 
 sub demo :Local {
     my ($self, $c) = @_;
-    
+
     $c->res->body(q{<img src="/dashboard/svg_demo" width="200" height="200" />});
 }
 

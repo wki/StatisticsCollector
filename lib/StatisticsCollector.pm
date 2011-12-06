@@ -40,8 +40,15 @@ __PACKAGE__->config(
 
     default_view => 'ByCode',
 
-    'View::Chart' => {
-        format => 'svg',
+    'Model::DB' => {
+        schema_class => 'StatisticsCollector::Schema',
+
+        connect_info => {
+            dsn => $ENV{DSN} // 'dbi:Pg:dbname=statistics',
+            user => 'postgres',
+            password => '',
+            pg_enable_utf8 => 1,
+        },
     },
 );
 

@@ -26,6 +26,29 @@ Infos about deployment etc.
    Port:          127.0.0.1:5000
    Deploy Script: ./script/statisticscollector_rsync.sh
 
+Optional:
+
+4) UDP Server -- allows faster measure sending
+
+5) send_measure.pl -- connects to UDP Server
+
+
+------ kinds of measures:
+
+ - Temperature, Humidity, ... (discrete values)
+   (value): measure in measured unit (eg. degrees)
+   (nothing): no info about sensor
+
+ - Alarm switches
+   0: switch is in "regular" state -- no problem
+   1: switch is in "alaram" state -- houston, a problem
+   (nothing): no info about alarm switch
+
+ - long running processes
+   1: process started
+   0: process still running
+   -1: process terminated
+   (nothing): no action
 
 
 ------ nginx config:

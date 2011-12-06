@@ -18,7 +18,7 @@ allows query or adding measures for sensors
 
 retrieves the latest measure for a sensor
 
-=item PUT /sensor/a/b/c
+=item POST /sensor/a/b/c
 
 adds a new measure for this sensor. The POST params must contain a parameter
 named C<value>.
