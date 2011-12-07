@@ -148,34 +148,6 @@ sub graph_demo :Local {
     my ($self, $c) = @_;
 }
 
-sub demo :Local {
-    my ($self, $c) = @_;
-
-    $c->res->body(q{<img src="/dashboard/svg_demo" width="200" height="200" />});
-}
-
-=head2 svg_demo
-
-=cut
-
-sub svg_demo :Local {
-    my ($self, $c) = @_;
-
-    $c->stash->{chart_title} = 'Sales data'; # optional
-
-    $c->stash->{chart_type} = 'Bar'; # or Pie/Line/BarHorizontal
-
-    $c->stash->{chart_conf} = {
-        height  => 400,
-        width   => 600
-    };
-
-    $c->stash->{chart_fields} = [ qw(Jan Feb March ) ];
-    $c->stash->{chart_data} = [ 120, 102, 100];
-
-    $c->forward($c->view('SVG'));
-}
-
 =head1 AUTHOR
 
 Wolfgang Kinkeldei

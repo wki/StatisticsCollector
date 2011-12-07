@@ -33,15 +33,29 @@ sub process {
       || die "Error: $!";
 
     my $graph = Imager::Graph::StackedColumn->new();
-    
-    my $y_max = $c->stash->{y_max} // 40;
-    $y_max = int(($y_max + 9) / 10) * 10;
-    
+
+    my $y_max = $c->stash->{y_max} // 20;
     my $y_min = $c->stash->{y_min} // 0;
-    $y_min = int(($y_min - 9) / 10) * 10;
-    $y_min = 0 if $y_min > 0;
     
-    my $ticks = int(($y_max - $y_min) / 5) + 1;
+    my $delta = 1;
+    my $ticks = 9999;
+    while ($ticks > 10) {
+        $y_max = int(($y_max + (9 * $delta )) / (10 * $delta)) * (10 * $delta);
+        
+        $y_min = int(($y_min - (9 * $delta)) / (10 * $delta)) * (10 * $delta);
+        $y_min = 0 if $y_min > 0;
+        
+        $ticks = int(($y_max - $y_min) / (5 * $delta)) + 1;
+        if ($ticks > 10) {
+            $ticks = int(($y_max - $y_min) / (10 * $delta)) + 1
+        }
+        
+        if ($ticks > 20) {
+            $delta *= 10;
+        }
+        
+        # $c->log->warn("min=$y_min, max=$y_max, ticks=$ticks, delta=$delta");
+    }
 
     $graph->add_data_series( @{$_} ) for @{ $c->stash->{data} };
 
