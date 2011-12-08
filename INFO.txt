@@ -51,6 +51,22 @@ Optional:
    (nothing): no action
 
 
+------ measures:
+
+hot/renderer/create       --> nr hangtags created
+hot/renderer/import       --> nr hangtags imported
+hot/webserver/deliver     --> nr orders|parts delivered
+
+hrko/renderer/proof       --> nr documents proofed
+hrko/renderer/translate   --> nr documents translated
+hrko/renderer/metadata    --> nr files metadata updated
+hrko/renderer/ftp         --> nr files transferred to ftp
+hrko/renderer/web         --> nr files transferred to web
+hrko/webserver/arp        --> nr elements transferred to aRP
+hrko/webserver/notify     --> nr people notified
+
+ola/
+
 ------ nginx config:
 server {
     listen 81 default;
