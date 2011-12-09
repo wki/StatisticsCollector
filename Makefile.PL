@@ -30,6 +30,9 @@ requires 'Imager::Graph';
 requires 'CSS::Minifier::XS';
 requires 'JavaScript::Minifier::XS';
 
+# for deploying udp server:
+requries 'Deamon::Deamonize';
+
 test_requires 'Test::More' => '0.88';
 test_requires 'Test::Exception';
 test_requires 'Test::DBIx::Class';

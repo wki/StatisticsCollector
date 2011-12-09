@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Debug</key>
+    <false/>
+    <key>UserName</key>
+    <string>xsadmin</string>
+    <key>GroupName</key>
+    <string>staff</string>
+    <key>Label</key>
+    <string>de.nureg.statistics_udp_server</string>
+    <key>OnDemand</key>
+    <false/>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PERL5LIB</key>
+        <string>/Users/xsadmin/StatisticsCollector/perl5lib/lib/perl5:/Users/xsadmin/StatisticsCollector/lib</string>
+    </dict>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/local/bin/perl5.14.1</string>
+        <string>/Users/xsadmin/StatisticsCollector/script/statisticscollector_udp_server.pl</string>
+    </array>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
