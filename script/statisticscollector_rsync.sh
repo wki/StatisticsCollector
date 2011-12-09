@@ -16,6 +16,7 @@ rsync -vcr  --delete \
   --exclude 'META.*' --exclude 'MYMETA.*' --exclude .DS_Store \
   --exclude Makefile \
   --exclude script/dbicdh \
+  --exclude dump \
   --exclude Changes --exclude 'README.*' --exclude 'INFO.*' \
   . sites@myloc:$dstdir/ $*
 
