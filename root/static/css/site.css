@@ -31,8 +31,34 @@ Copyright (C) 2011, WKI
     border-top-right-radius: 6px;
     border-bottom: 2px ridge #ffffff;
     background-image: none;
-    background: -webkit-gradient(linear, center bottom, center top, from(#d0d0d0), color-stop(85%, #e0e0e0), to(#f2f2f2));
+    background: -webkit-gradient(linear, center bottom, center top, from(#808080), color-stop(2%, #c8c8c8), color-stop(75%, #e8e8e8), to(#ffffff));
 }
+
+.topper {
+    background-image: none;
+    background: -webkit-gradient(linear, center bottom, center top, from(#808080), color-stop(2%, #c8c8c8), color-stop(75%, #e8e8e8), to(#ffffff));
+}
+
+/* .nav: a variation of .tabs */
+.nav{}
+.nav .hd{}
+.nav .bd{}
+.nav .hd ul{padding:0; display:table-row;_zoom:1;}
+.nav .hd li{display:table-cell;*display:inline;vertical-align:middle;}
+.nav .navControl a{display:inline-block;text-decoration: none;}
+.nav .navControl span{display:inline-block; text-align:center; padding: 5px 20px;}
+
+.nav .topper{padding:0;}
+
+.navControl li{border-right:solid 1px #ccc; border-left:solid 1px #fff;}
+.navControl li:last-child{border-right:none;}
+.navControl li:first-child{border-left:none;}
+.nav a{font-weight:normal; color: #333;}
+.nav .hd .navControl .current{background-color: #fff;}
+.nav li a:hover{color:#999;}
+.nav .hd li.current a,.tabs .hd li.current span{cursor: default;}
+.nav li.current a:hover{color:#333;}
+.nav .hd li span{cursor:pointer;}
 
 
 /* additional table attributes */

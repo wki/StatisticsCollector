@@ -9,15 +9,14 @@ use Module::Install::Catalyst; # Complain loudly if you don't have
 name 'StatisticsCollector';
 all_from 'lib/StatisticsCollector.pm';
 
+requires 'namespace::autoclean';
 requires 'Catalyst::Runtime' => '5.90003';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Action::RenderView';
 requires 'Catalyst::Action::REST';
 requires 'Moose';
-requires 'namespace::autoclean';
 requires 'Config::General';
-requires 'Proc::Class';
 requires 'DBIx::Class::DeploymentHandler';
 requires 'DBIx::Class::Candy';
 requires 'DBD::Pg';
@@ -25,13 +24,20 @@ requires 'DateTime::Format::Pg';
 requires 'Catalyst::View::ByCode';
 requires 'Catalyst::Controller::Combine';
 requires 'Catalyst::Model::DBIC::Schema';
+
+# graph generation
 requires 'Imager';
 requires 'Imager::Graph';
+
+# for CSS generation
 requires 'CSS::Minifier::XS';
+requires 'Proc::Class';
+
+# for JS generation
 requires 'JavaScript::Minifier::XS';
 
-# for deploying udp server:
-requries 'Deamon::Deamonize';
+# deployment
+requires 'Plack::Builder';
 
 test_requires 'Test::More' => '0.88';
 test_requires 'Test::Exception';

@@ -1,6 +1,18 @@
 #
 # top level wrapper
 #
+
+block navitem {
+    my $namespace = attr('namespace') // '';
+    
+    li.phl.pvm {
+        class '+current' if (c->namespace eq $namespace);
+        a(href => c->uri_for_action("$namespace/index")) {
+            block_content;
+        }
+    };
+};
+
 template {
     doctype 'html';
     boilerplate {
@@ -16,11 +28,21 @@ template {
                 };
                 div.body {
                     div.main {
-                        yield;
+                        mod.topic.nav {
+                            div.hd.topper.phl {
+                                ul.navControl {
+                                    navitem(namespace => 'dashboard') { 'Dashboard' };
+                                    navitem(namespace => 'admin')     { 'Admin' };
+                                }
+                            };
+                            div.bd {
+                                yield;
+                            };
+                        };
                     };
                 };
                 div.foot {
-                    div.ft.act.phm.pvs.mbl { 
+                    div.ft.act.phm.pvs.mbl {
                         div.line {
                             div.unit.size1of3 { "Statistics Collector $StatisticsCollector::VERSION" };
                             div.unit.size1of3.txtC { 'Copyright (C) 2011 WKI' };

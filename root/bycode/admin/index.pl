@@ -1,6 +1,15 @@
 #
 # admin / index
 #
+template {
+    # div.line.mtm {
+    #     div.unit.size1of2.pll { show_filters() };
+    #     div.unit.size1of4.txtR.prl { show_special_filter() };
+    #     div.unit.size1of4.lastUnit.txtR.prl { show_pager() };
+    # };
+    
+    div.data.simpleTable { show_alarm_table() };
+};
 
 sub show_alarm_table {
     table.txtL {
@@ -41,22 +50,4 @@ sub show_data_row {
         };
         tcol.txtL { 'x' };
     };
-
 }
-
-template {
-    mod.topic {
-        div.hd.section.phm { 
-            h3 { 'Admin Area' } 
-        };
-        div.bd {
-            # div.line.mtm {
-            #     div.unit.size1of2.pll { show_filters() };
-            #     div.unit.size1of4.txtR.prl { show_special_filter() };
-            #     div.unit.size1of4.lastUnit.txtR.prl { show_pager() };
-            # };
-            
-            div.data.simpleTable { show_alarm_table() };
-        };
-    };
-};

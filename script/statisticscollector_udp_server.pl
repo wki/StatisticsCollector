@@ -7,7 +7,6 @@ use lib "$FindBin::Bin/../lib";
 use Getopt::Std;
 use IO::Socket::INET;
 use Try::Tiny;
-use Daemon::Daemonize ':all';
 use StatisticsCollector::Schema;
 
 my %opts;
@@ -19,7 +18,7 @@ my $dsn      = $opts{d} || 'dbi:Pg:dbname=statistics';
 my $user     = $opts{U} || 'statistics';
 my $password = $opts{P} || 'numbers';
 
-daemonize( run => \&process_loop );
+process_loop();
 exit;
 
 sub process_loop {

@@ -4,29 +4,31 @@ use warnings;
 use IO::Socket::INET;
 use Getopt::Std;
 
+my $DEFAULT_HOST = '127.0.0.1';
+my $DEFAULT_PORT = 8080;
+
 my %opts;
 getopts('hs:p:', \%opts);
 usage() if $opts{h};
-my $server = $opts{s} || '127.0.0.1';
-my $port   = $opts{p} || 8080;
+die 'nothing to send' if !@ARGV;
 
-die 'nothing to send' if (!@ARGV);
+my %socket_options = (
+    PeerHost => $opts{s} || $DEFAULT_HOST,
+    PeerPort => $opts{p} || $DEFAULT_PORT,
+    Proto    => 'udp'
+);
 
-my $sock = IO::Socket::INET->new(
-    PeerAddr => $server, 
-    PeerPort => $port,
-    Proto    => 'udp',
-    Timeout  => 1) or die "could not connect: $@";
+my $sock = IO::Socket::INET->new( %socket_options )
+    or die "could not connect to socket: $@";
 
 print $sock join(' ', @ARGV);
 
-
 sub usage {
     print <<EOF;
-send_measure [options] name/of/sensor [measure]
+send_measure [options] name/of/sensor [value]
    -h       this help
-   -s addr  server (default: 127.0.0.1)
-   -p port  port (default: 8080)
+   -s addr  server (default: $DEFAULT_HOST)
+   -p port  port (default: $DEFAULT_PORT)
    
 EOF
     exit;

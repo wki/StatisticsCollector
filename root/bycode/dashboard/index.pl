@@ -1,6 +1,14 @@
 #
 # dashboard / index
 #
+template {
+    div.line.mtm {
+        div.unit.size1of2.pll               { show_filters() };
+        div.unit.size1of4.txtR.prl          { show_special_filter() };
+        div.unit.size1of4.lastUnit.txtR.prl { show_pager() };
+    };
+    div.data.simpleTable { show_sensor_table() };
+};
 
 sub _construct_filter_params {
     my %args = @_;
@@ -224,19 +232,3 @@ sub show_data_row {
         };
     };
 }
-
-template {
-    mod.topic {
-        div.hd.section.phm { 
-            h3 { 'Latest Measures' } 
-        };
-        div.bd {
-            div.line.mtm {
-                div.unit.size1of2.pll { show_filters() };
-                div.unit.size1of4.txtR.prl { show_special_filter() };
-                div.unit.size1of4.lastUnit.txtR.prl { show_pager() };
-            };
-            div.data.simpleTable { show_sensor_table() };
-        };
-    };
-};
