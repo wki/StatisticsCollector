@@ -39,6 +39,16 @@ sub index :Path :Args(0) {
         'Matched StatisticsCollector::Controller::Graph in Graph.');
 }
 
+=head2 error
+
+=cut
+
+sub error :Action {
+    my ($self, $c, $message) = @_;
+    $c->res->content($message // 'An error occured');
+    $c->res->code(500);
+}
+
 =head2 base
 
 base of all chains defined here
@@ -58,9 +68,8 @@ startpoint of a common chain allowing to specify the sensor to show the graph fo
 sub sensor :Chained('base') :CaptureArgs(1)  {
     my ( $self, $c, $sensor_id ) = @_;
 
-    $c->log->warn('sensor');
     $c->stash->{sensor} = $c->model('DB::Sensor')->find($sensor_id)
-      or die "Could not find sensor $sensor_id";
+        or $c->detach(error => ["Could not find sensor $sensor_id"]);
 }
 
 =head2 hours
@@ -73,16 +82,16 @@ URL: /graph/sensor/<sensor_id>/hours [ / <nr_of_hours>]
 
 sub hours :Chained('sensor') {
     my ( $self, $c, $nr_of_hours ) = @_;
-    
+
     $nr_of_hours = 12 if !$nr_of_hours || $nr_of_hours < 5 || $nr_of_hours > 48;
-    
+
     my $sensor = $c->stash->{sensor};
-    
+
     my @measures = $sensor->aggregate_measures('hour', $nr_of_hours);
-    
+
     my @labels = map { $_->starting_at->hour }
                  @measures;
-    
+
     $c->forward('construct_graph', [\@measures, \@labels]);
 }
 
@@ -96,17 +105,17 @@ URL: /graph/sensor/<sensor_id>/days [ / <nr_of_days>]
 
 sub days :Chained('sensor') {
     my ( $self, $c, $nr_of_days ) = @_;
-    
+
     $nr_of_days = 7 if !$nr_of_days || $nr_of_days < 5 || $nr_of_days > 35;
-    
+
     my $sensor = $c->stash->{sensor};
-    
+
     my @measures = $sensor->aggregate_measures('day', $nr_of_days);
     my @day_of_week = ('?', split(//, 'MTWTFSS'));
-    
+
     my @labels = map { $day_of_week[ $_->starting_at->day_of_week ] }
                  @measures;
-    
+
     $c->forward('construct_graph', [\@measures, \@labels]);
 }
 
@@ -120,16 +129,16 @@ URL: /graph/sensor/<sensor_id>/weeks [ / <nr_of_weeks>]
 
 sub weeks :Chained('sensor') {
     my ( $self, $c, $nr_of_weeks ) = @_;
-    
+
     $nr_of_weeks = 12 if !$nr_of_weeks || $nr_of_weeks < 8 || $nr_of_weeks > 30;
-    
+
     my $sensor = $c->stash->{sensor};
-    
+
     my @measures = $sensor->aggregate_measures('week', $nr_of_weeks);
-    
+
     my @labels = map { $_->starting_at->week_number }
                  @measures;
-    
+
     $c->forward('construct_graph', [\@measures, \@labels]);
 }
 
@@ -143,16 +152,16 @@ URL: /graph/sensor/<sensor_id>/months [ / <nr_of_months>]
 
 sub months :Chained('sensor') {
     my ( $self, $c, $nr_of_months ) = @_;
-    
+
     $nr_of_months = 12 if !$nr_of_months || $nr_of_months < 8 || $nr_of_months > 24;
-    
+
     my $sensor = $c->stash->{sensor};
-    
+
     my @measures = $sensor->aggregate_measures('month', $nr_of_months);
-    
+
     my @labels = map { $_->starting_at->month }
                  @measures;
-    
+
     $c->forward('construct_graph', [\@measures, \@labels]);
 }
 
@@ -164,39 +173,49 @@ common handling for graph building. Receives measures and labels
 
 sub construct_graph :Private {
     my ($self, $c, $measures, $labels) = @_;
-    
+
     my $sensor = $c->stash->{sensor};
-    
-    my (@min, @max);
-    my ($y_min, $y_max);
+
+    my (@min, @max, @avg, @sum, @nr);
     foreach my $measure (@{$measures}) {
         if (defined($measure->min_value)) {
             push @min, $measure->min_value;
             push @max, $measure->max_value - $measure->min_value;
-            $y_min //= $measure->min_value;
-            $y_max //= $measure->max_value;
-            $y_min = min($y_min, $measure->min_value);
-            $y_max = max($y_max, $measure->max_value);
+            push @avg, $measure->sum_value / $measure->nr_values;
+            push @sum, $measure->sum_value;
+            push @nr,  $measure->nr_values;
         } else {
             push @min, undef;
             push @max, undef;
+            push @avg, undef;
+            push @sum, undef;
+            push @nr,  undef;
         }
     }
-    
+
+    my @data;
+    if ($sensor->default_graph_type eq 'avg') {
+        push @data, [ \@avg, 'avg' ];
+    } else {
+        push @data, [ \@max, 'max' ];
+        push @data, [ \@min, 'min' ];
+    }
+
     $c->stash(
         title    => $sensor->name,
         width    => 600,
         height   => 400,
-        data     => [ 
-            [ \@max, 'max' ], # actually: max - min
-            [ \@min, 'min' ],
-        ],
-        y_max    => $y_max,
-        y_min    => $y_min,
+        data     => \@data,
+        y_max    => max(_values_of(@data)),
+        y_min    => min(_values_of(@data)),
         labels   => $labels,
     );
-    
+
     $c->forward( 'View::Graph' );
+}
+
+sub _values_of {
+    grep defined, map { @{$_->[0]} } @_
 }
 
 =head1 AUTHOR

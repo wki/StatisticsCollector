@@ -131,3 +131,12 @@ $ cpanm -L perl5libs --installdeps .
 (modify init.d script)
 
 # /etc/init.d/site_deamon start
+
+
+------ Ideas for graphs:
+
+- avg
+- range: min/max values
+- sum
+- count
+

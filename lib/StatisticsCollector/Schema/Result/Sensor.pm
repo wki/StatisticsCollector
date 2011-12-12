@@ -17,6 +17,18 @@ unique_column name => {
     default_value => '',
 };
 
+column active => {
+    data_type => 'boolean',
+    is_nullable => 0,
+    default_value => 1,
+};
+
+column default_graph_type => {
+    data_type => 'text',
+    is_nullable => 0,
+    default_value => 'avg',
+};
+
 has_many   measures       => 'StatisticsCollector::Schema::Result::Measure',       'sensor_id';
 might_have latest_measure => 'StatisticsCollector::Schema::Result::LatestMeasure', 'sensor_id';
 

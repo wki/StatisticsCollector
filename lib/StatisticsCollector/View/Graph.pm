@@ -72,14 +72,16 @@ sub process {
     $graph->set_image_height($c->stash->{height}  // 400);
 
     my $img = $graph->draw(
-        features       => [ "horizontal_gridlines", "areamarkers" ],
+        features       => [ 'horizontal_gridlines', 'areamarkers' ],
         column_padding => 20,
         labels         => $c->stash->{labels},
         title          => $c->stash->{title} // 'Untitled',
         font           => $font,
         hgrid          => { style => "dashed", color => "#888" },
         graph          => { outline => { color => "#F00", style => "dotted" }, },
-
+        fills          => [
+            qw(80ff80 8080ff),
+        ],
     ) or die $graph->error;
 
     my $data;

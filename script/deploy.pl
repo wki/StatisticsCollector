@@ -16,7 +16,7 @@ my $dh = DH->new({
      script_directory    => "$FindBin::Bin/dbicdh",
      databases           => 'PostgreSQL',
      sql_translator_args => { add_drop_table => 0 },
-     force_overwrite => 1
+     force_overwrite     => 1
 });
 
 if ($StatisticsCollector::Schema::VERSION == 1) {
@@ -25,8 +25,8 @@ if ($StatisticsCollector::Schema::VERSION == 1) {
 } else {
     $dh->prepare_upgrade(
         { 
-            from_version => $StatisticsCollector::Schema::VERSION, 
-            to_version =>   $StatisticsCollector::Schema::VERSION + 1
+            from_version => $StatisticsCollector::Schema::VERSION - 1,
+            to_version   => $StatisticsCollector::Schema::VERSION
         });
     $dh->upgrade;
 }
