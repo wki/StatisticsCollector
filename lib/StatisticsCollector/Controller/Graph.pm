@@ -176,38 +176,49 @@ sub construct_graph :Private {
 
     my $sensor = $c->stash->{sensor};
 
-    my (@min, @max, @avg, @sum, @nr);
+    my (@min, @max, @dif, @avg, @sum, @nr);
     foreach my $measure (@{$measures}) {
         if (defined($measure->min_value)) {
             push @min, $measure->min_value;
-            push @max, $measure->max_value - $measure->min_value;
+            push @max, $measure->max_value;
+            push @dif, $measure->max_value - $measure->min_value;
             push @avg, $measure->sum_value / $measure->nr_values;
             push @sum, $measure->sum_value;
             push @nr,  $measure->nr_values;
         } else {
             push @min, undef;
             push @max, undef;
+            push @dif, undef;
             push @avg, undef;
             push @sum, undef;
             push @nr,  undef;
         }
     }
 
-    my @data;
-    if ($sensor->default_graph_type eq 'avg') {
-        push @data, [ \@avg, 'avg' ];
-    } else {
-        push @data, [ \@max, 'max' ];
+    my (@data, $y_min, $y_max);
+    if ($sensor->default_graph_type eq 'range') {
+        push @data, [ \@dif, 'max' ];
         push @data, [ \@min, 'min' ];
+        $y_min = min @min;
+        $y_max = max @max;
+    } elsif ($sensor->default_graph_type eq 'count') {
+        push @data, [ \@nr, 'count' ];
+    } elsif ($sensor->default_graph_type eq 'sum') {
+        push @data, [ \@sum, 'sum' ];
+    } else { # avg
+        push @data, [ \@avg, 'avg' ];
     }
+    
+    $y_min //= min _values_of(@data);
+    $y_max //= max _values_of(@data);
 
     $c->stash(
         title    => $sensor->name,
         width    => 600,
         height   => 400,
         data     => \@data,
-        y_max    => max(_values_of(@data)),
-        y_min    => min(_values_of(@data)),
+        y_max    => $y_max,
+        y_min    => $y_min,
         labels   => $labels,
     );
 

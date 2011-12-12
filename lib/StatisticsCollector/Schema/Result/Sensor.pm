@@ -33,8 +33,9 @@ has_many   measures       => 'StatisticsCollector::Schema::Result::Measure',    
 might_have latest_measure => 'StatisticsCollector::Schema::Result::LatestMeasure', 'sensor_id';
 
 sub add_measure {
-    my ($self, $value) = @_;
-
+    my $self  = shift;
+    my $value = shift // 0;
+    
     my $this_hour = DateTime->now( time_zone => 'local' )
                             ->truncate( to => 'hour' );
     my $next_hour = $this_hour->clone->add( hours => 1 );

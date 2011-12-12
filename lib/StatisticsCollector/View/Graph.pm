@@ -36,29 +36,33 @@ sub process {
 
     my $y_max = $c->stash->{y_max} // 20;
     my $y_min = $c->stash->{y_min} // 0;
-    
+
+    # $c->log->debug("BEFORE min=$y_min, max=$y_max");
+
     my $delta = 1;
     my $ticks = 9999;
     my $count = 0;
     while ($ticks > 10 && $count < 100) {
         $y_max = int(($y_max + (9 * $delta )) / (10 * $delta)) * (10 * $delta);
         $y_max = 10 if $y_max < 10;
-        
+
         $y_min = int(($y_min - (9 * $delta)) / (10 * $delta)) * (10 * $delta);
         $y_min = 0 if $y_min > 0;
-        
+
         $ticks = int(($y_max - $y_min) / (5 * $delta)) + 1;
         if ($ticks > 10) {
             $ticks = int(($y_max - $y_min) / (10 * $delta)) + 1
         }
-        
+
         if ($ticks > 20) {
             $delta *= 10;
         }
-        
+
         # $c->log->warn("min=$y_min, max=$y_max, ticks=$ticks, delta=$delta");
         $count++;
     }
+
+    # $c->log->debug("AFTER min=$y_min, max=$y_max");
 
     $graph->add_data_series( @{$_} ) for @{ $c->stash->{data} };
 
@@ -80,7 +84,7 @@ sub process {
         hgrid          => { style => "dashed", color => "#888" },
         graph          => { outline => { color => "#F00", style => "dotted" }, },
         fills          => [
-            qw(80ff80 8080ff),
+            qw(60ff60 a0a0ff),
         ],
     ) or die $graph->error;
 
