@@ -39,7 +39,8 @@ sub process {
     
     my $delta = 1;
     my $ticks = 9999;
-    while ($ticks > 10) {
+    my $count = 0;
+    while ($ticks > 10 && $count < 100) {
         $y_max = int(($y_max + (9 * $delta )) / (10 * $delta)) * (10 * $delta);
         $y_max = 10 if $y_max < 10;
         
@@ -56,6 +57,7 @@ sub process {
         }
         
         # $c->log->warn("min=$y_min, max=$y_max, ticks=$ticks, delta=$delta");
+        $count++;
     }
 
     $graph->add_data_series( @{$_} ) for @{ $c->stash->{data} };
