@@ -100,3 +100,15 @@ from (select sensor_id, max(measure_id) as latest_measure_id
                ) m on (sm.latest_measure_id = m.measure_id)
 where sm.sensor_id in (26,27)
 ;
+
+
+
+-- update from version 1 to 2
+
+alter table sensor 
+    add column active boolean not null default true, 
+    add column default_graph_type text not null default 'avg';
+
+update sensor set default_graph_type ='sum' where name like '%/renderer/%';
+
+

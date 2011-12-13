@@ -182,7 +182,7 @@ sub construct_graph :Private {
             push @min, $measure->min_value;
             push @max, $measure->max_value;
             push @dif, $measure->max_value - $measure->min_value;
-            push @avg, $measure->sum_value / $measure->nr_values;
+            push @avg, int($measure->sum_value / $measure->nr_values);
             push @sum, $measure->sum_value;
             push @nr,  $measure->nr_values;
         } else {
@@ -213,7 +213,7 @@ sub construct_graph :Private {
     $y_max //= max _values_of(@data);
 
     $c->stash(
-        title    => $sensor->name,
+        title    => sprintf('%s (%s)', $sensor->name, $sensor->default_graph_type),
         width    => 600,
         height   => 400,
         data     => \@data,
