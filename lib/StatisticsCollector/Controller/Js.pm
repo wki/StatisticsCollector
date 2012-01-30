@@ -4,7 +4,7 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller::Combine' }
 
 # uncomment if desired and do not import namespace::autoclean!
-use JavaScript::Minifier::XS qw(minify);
+# use JavaScript::Minifier::XS qw(minify);
 
 __PACKAGE__->config(
     #   optional, defaults to static/<<action_namespace>>
@@ -18,7 +18,7 @@ __PACKAGE__->config(
     #     'jquery.metadata'     => 'jquery-1.6.2'
     #     'jquery.form-2.36'    => 'jquery-1.6.2'
     #     'jquery.validate-1.6' => [qw(jquery.form-2.36 jquery.metadata)]
-        site                  => [ qw(jquery-1.7) ],
+        site                  => [ qw(jquery-1.7 tipped) ],
     },
     #
     #   optionally specify replacements to get done
