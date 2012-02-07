@@ -38,6 +38,8 @@ requires 'JavaScript::Minifier::XS';
 
 # deployment
 requires 'Plack::Builder';
+requires 'Plack::Middleware::Runtime';
+requires 'Plack::Middleware::ServerStatus::Lite';
 
 test_requires 'Test::More' => '0.88';
 test_requires 'Test::Exception';

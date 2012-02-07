@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Debug</key>
+    <false/>
+    <key>UserName</key>
+    <string>wolfgang</string>
+    <key>GroupName</key>
+    <string>staff</string>
+    <key>Label</key>
+    <string>de.kinkeldei.statistics_tcp_server_starter</string>
+    <key>OnDemand</key>
+    <false/>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PERL5LIB</key>
+        <string>/Users/wolfgang/proj/StatisticsCollector/lib</string>
+    </dict>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/wolfgang/perl5/perlbrew/perls/perl-5.14.2/bin/perl5.14.2</string>
+        <string>/Users/wolfgang/perl5/perlbrew/perls/perl-5.14.2/bin/start_server</string>
+        <string>--port</string>
+        <string>8080</string>
+        <string>--</string>
+        <string>/Users/wolfgang/perl5/perlbrew/perls/perl-5.14.2/bin/starman</string>
+        <string>--workers</string>
+        <string>5</string>
+        <string>/Users/wolfgang/proj/StatisticsCollector/statisticscollector.psgi</string>
+    </array>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
