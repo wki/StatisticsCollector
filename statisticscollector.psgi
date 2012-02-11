@@ -5,24 +5,31 @@ use FindBin;
 use Plack::Builder;
 use StatisticsCollector;
 
+#
+# some helpers. All called with $env
+#
 sub is_development {
     $ENV{PLACK_ENV} && $ENV{PLACK_ENV} eq 'development'
 }
 
-sub not_a_proxy_request {
-    !exists $_[0]->{HTTP_X_FORWARDED_FOR}
+sub is_proxy_request {
+    exists $_[0]->{HTTP_X_FORWARDED_FOR}
 }
 
+#
+# our app decorated with middleware
+#
 builder {
-    if (!is_development) {
-        enable "Plack::Middleware::Static",
-            path => qr{\A/(css|js)/}xms,
-            root => "$FindBin::Bin/root/_static/";
-    }
+    enable_if { !is_development($_[0]) } 'Plack::Middleware::Static',
+        path => qr{\A/(css|js)/}xms,
+        root => "$FindBin::Bin/root/_static/";
 
     enable 'Runtime';
 
-    enable_if \&not_a_proxy_request, 'ServerStatus::Lite',
+    # WRONG: enable_if restricts from saving things!
+    # enable_if { !is_proxy_request($_[0]) } 'ServerStatus::Lite',
+    # must find a way to fail on /server-status if proxy request
+    enable 'ServerStatus::Lite',
         path       => '/server-status',
         allow      => [ '127.0.0.1' ],
         scoreboard => "$FindBin::Bin/run";
