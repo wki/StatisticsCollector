@@ -47,6 +47,38 @@ sub default :Path {
     $c->response->status(404);
 }
 
+=head2 debug_page
+
+just some debugging messages
+
+=cut
+
+sub debug_page :Local {
+    my ($self, $c) = @_;
+    
+    
+    my @messages;
+    if ($c->can('session')) {
+        push @messages, 'SESSION - page: ' . $c->session->{page_nr}++;
+        push @messages, '';
+    }
+    
+    push @messages, 'ENGINE';
+    push @messages, map { "    $_ = ${\$c->engine->env->{$_}}" } 
+                    sort 
+                    keys %{$c->engine->env};
+    
+    push @messages, '';
+    
+    push @messages, 'ENV';
+    push @messages, map { "    $_ = $ENV{$_}" } 
+                    sort
+                    keys %ENV;
+    
+    $c->response->body( join("\n", @messages) );
+    $c->response->content_type('text/plain');
+}
+
 =head2 end
 
 Attempt to render a view, if needed.
