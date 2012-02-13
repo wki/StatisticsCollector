@@ -20,9 +20,9 @@ foreach my $pid (sort keys %$status) {
     
     if ($status->{$pid} !~ m{\A _}xms) {
         if ($now - $mtime > $TIMEOUT) {
-            $age = "> $TIMEOUT";
+            $age = "> $TIMEOUT s";
         } else {
-            $age = sprintf('(%d s)', $now-$mtime);
+            $age = sprintf('%d s', $now-$mtime);
         }
     }
     printf("%05d: %-8s %s\n",
