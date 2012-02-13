@@ -1,7 +1,5 @@
 #!/usr/bin/env perl
-use strict;
-use warnings;
-use feature ':5.10';
+use Modern::Perl;
 use FindBin;
 use lib "$FindBin::Bin/../lib";
 use Getopt::Std;

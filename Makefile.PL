@@ -10,6 +10,7 @@ name 'StatisticsCollector';
 all_from 'lib/StatisticsCollector.pm';
 
 requires 'namespace::autoclean';
+requires 'Modern::Perl';
 requires 'Catalyst::Runtime' => '5.90003';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';

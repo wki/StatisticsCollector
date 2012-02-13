@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
-use strict;
-use warnings;
+use Modern::Perl;
 use IO::Socket::INET;
 use Getopt::Std;
 
