@@ -29,10 +29,13 @@ builder {
     # WRONG: enable_if restricts from saving things!
     # enable_if { !is_proxy_request($_[0]) } 'ServerStatus::Lite',
     # must find a way to fail on /server-status if proxy request
-    enable 'ServerStatus::Lite',
-        path       => '/server-status',
-        allow      => [ '127.0.0.1' ],
-        scoreboard => "$FindBin::Bin/run";
+    # enable 'ServerStatus::Lite',
+    #     path       => '/server-status',
+    #     allow      => [ '127.0.0.1' ],
+    #     scoreboard => "$FindBin::Bin/run";
+    
+    enable 'Monitor',
+        base_dir => "$FindBin::Bin/run";
 
     StatisticsCollector->apply_default_middlewares(
         StatisticsCollector->psgi_app
