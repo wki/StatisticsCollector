@@ -35,7 +35,7 @@ builder {
     #     scoreboard => "$FindBin::Bin/run";
     
     enable 'Monitor',
-        base_dir => "$FindBin::Bin/run";
+        prefix => 'statistics';
 
     StatisticsCollector->apply_default_middlewares(
         StatisticsCollector->psgi_app
