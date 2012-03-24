@@ -1,0 +1,42 @@
+/* styling of forms for administration */
+
+form {
+    width: 100%;
+}
+
+form fieldset {
+    border: 1px solid #ae0345;
+    padding: 10px;
+}
+
+form fieldset legend {
+    border: 1px solid #ae0345;
+    background-color: #fff0f8;
+    padding: 3px 10px;
+    font-weight: bold;
+}
+
+div.text,
+div.multi,
+div.select,
+div.submit {
+    position: relative;
+    margin-bottom: 10px;
+    margin-left: 200px;
+}
+
+label:first-child {
+    position: absolute;
+    left: -200px;
+    top: auto;
+    width: 180px;
+    text-align: right;
+}
+
+input.input-int {
+    width: 75px;
+}
+
+input.input-string {
+    width: 300px;
+}

@@ -9,6 +9,12 @@ template {
     # };
     
     div.data.simpleTable { show_alarm_table() };
+    
+    br;
+    br;
+    div.pal {
+        stash->{form};
+    };
 };
 
 sub show_alarm_table {

@@ -19,7 +19,7 @@ __PACKAGE__->config(
     #   specify dependencies (without file extensions)
     depend => {
         # page    => [ qw(forms table) ],
-        site    => [ qw(all tipped) ],
+        site    => [ qw(all tipped form) ],
     },
     #
     #   optionally specify replacements to get done

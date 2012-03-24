@@ -25,6 +25,9 @@ requires 'DateTime::Format::Pg';
 requires 'Catalyst::View::ByCode';
 requires 'Catalyst::Controller::Combine';
 requires 'Catalyst::Model::DBIC::Schema';
+requires 'HTML::FormFu';
+requires 'Catalyst::Controller::HTML::FormFu';
+requires 'HTML::FormFu::Model::DBIC';
 
 # graph generation
 requires 'Imager';
