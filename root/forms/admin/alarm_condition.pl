@@ -1,6 +1,6 @@
 {
-    action => '/admin/save_alarm_condition',
-    indicator => 'saved',
+    action => '/admin/alarm_condition/save',
+    indicator => 'submitted',
     auto_id => 'alarm_condition_%n',
     auto_fieldset => {
         legend => 'Alarm Condition',
@@ -65,7 +65,7 @@
                 },
                 {
                     type => 'Text',
-                    name => 'latest_value_gt',
+                    name => 'min_value_gt',
                     attributes => { class => 'input-int' },
                 },
                 {
@@ -74,7 +74,7 @@
                 },
                 {
                     type => 'Text',
-                    name => 'latest_value_lt',
+                    name => 'max_value_lt',
                     attributes => { class => 'input-int' },
                 },
             ]
@@ -99,7 +99,7 @@
         },
         {
             type => 'Hidden',
-            name => 'saved',
+            name => 'submitted',
             value => 1,
         },
         {

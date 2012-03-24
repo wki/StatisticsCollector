@@ -36,6 +36,9 @@ template {
                                 }
                             };
                             div.bd {
+                                if (stash->{message}) {
+                                    div.message.pal { stash->{message} };
+                                }
                                 yield;
                             };
                         };

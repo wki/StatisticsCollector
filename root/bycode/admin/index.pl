@@ -9,25 +9,19 @@ template {
     # };
     
     div.data.simpleTable { show_alarm_table() };
-    
-    br;
-    br;
-    div.pal {
-        stash->{form};
-    };
 };
 
 sub show_alarm_table {
     table.txtL {
         thead {
             trow {
-                th(width => '20%') { 'Alarm Name' };
+                th(width => '18%') { 'Alarm Name' };
                 th(width => '16%') { 'Sensor Mask' };
                 th.txtC(width => '10%') { 'Severity' };
                 th.txtC(width => '10%') { 'Age [min]' };
                 th.txtC(width => '10%') { 'Latest' };
                 th.txtC(width => '10%') { 'Min/Max' };
-                th(width =>  '4%') { '' };
+                th(width =>  '6%') { '' };
             };
         };
         tbody {
@@ -54,6 +48,10 @@ sub show_data_row {
                  ($alarm_condition->min_value_gt // '-'),
                  ($alarm_condition->max_value_lt // '-') )
         };
-        tcol.txtL { 'x' };
+        tcol.txtL {
+            a.button(href => c->uri_for_action('admin/alarm_condition/index', $alarm_condition->id)) {
+                '>>>'
+            };
+        };
     };
 }

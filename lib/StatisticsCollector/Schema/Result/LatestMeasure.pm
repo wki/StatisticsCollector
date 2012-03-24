@@ -36,6 +36,18 @@ and adds a few more.
 
 =cut
 
+=head2 alarm_condition_id
+
+if non-null, indicates the alarm condition responsible for the alarms
+
+=cut
+
+column alarm_condition_id => {
+    data_type => 'int',
+    is_nullable => 1,
+};
+
+
 =head2 measure_age_alarm
 
 indicates that the measure age is higher than allowed
@@ -113,6 +125,7 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 
 __PACKAGE__->result_source_instance->view_definition(q{
     select m.*,
+           ac.alarm_condition_id,
            case when ac.max_measure_age_minutes is not null
                      and age(now(), m.updated_at) > (interval '1 minute') * ac.max_measure_age_minutes
                     then 1

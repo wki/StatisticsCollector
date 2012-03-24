@@ -2,7 +2,7 @@ package StatisticsCollector::Controller::Admin;
 use Moose;
 use namespace::autoclean;
 
-BEGIN {extends 'Catalyst::Controller::HTML::FormFu' }
+BEGIN { extends 'Catalyst::Controller' }
 
 =head1 NAME
 
@@ -10,18 +10,17 @@ StatisticsCollector::Controller::Admin - The entire admin area
 
 =head1 DESCRIPTION
 
-manages all admin responsibilities
+manages all admin responsibilities, currently only a list of alarm conditions.
 
 =head1 METHODS
 
 =cut
 
-
 =head2 index
 
 =cut
 
-sub index :Path :FormConfig('admin/alarm_condition') :Args(0) {
+sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
     
     $c->stash->{alarm_conditions} = [
@@ -37,7 +36,6 @@ sub index :Path :FormConfig('admin/alarm_condition') :Args(0) {
           ->all
     ];
 }
-
 
 =head1 AUTHOR
 

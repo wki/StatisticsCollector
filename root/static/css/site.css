@@ -104,3 +104,8 @@ Copyright (C) 2011, WKI
 .graph_container:hover .image {
     display: block;
 }
+
+.message {
+    padding: 5px 10px;
+    background-color: #fff0f8;
+}

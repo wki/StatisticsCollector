@@ -25,7 +25,7 @@ div.submit {
     margin-left: 200px;
 }
 
-label:first-child {
+label :first-of-type {
     position: absolute;
     left: -200px;
     top: auto;
@@ -39,4 +39,22 @@ input.input-int {
 
 input.input-string {
     width: 300px;
+}
+
+.button {
+    border: 1px solid #ae0345;
+    border-radius: 2px;
+    background-color: #fff0f8;
+    padding: 2px 8px;
+    font-weight: bold;
+}
+
+.error {
+    color: #ae0345;
+}
+
+.error_message {
+    display: block;
+    width: 100%;
+    font-weight: bold;
 }

@@ -23,6 +23,24 @@ A simple collector for sensor measures
 
 =head1 METHODS
 
+=cut
+
+=head2 auto
+
+some actions that must run at every request
+
+=cut
+
+sub auto :Private {
+    my ($self, $c) = @_;
+    
+    if (my $message = delete $c->req->params->{-message}) {
+        $c->stash->{message} = $message;
+    }
+    
+    return 1;
+}
+
 =head2 index
 
 The root page (/)
@@ -30,9 +48,9 @@ The root page (/)
 =cut
 
 sub index :Path :Args(0) {
-    my ( $self, $c ) = @_;
+    my ($self, $c) = @_;
 
-    $c->res->redirect( $c->uri_for_action('dashboard/index') );
+    $c->res->redirect($c->uri_for_action('dashboard/index'));
 }
 
 =head2 default

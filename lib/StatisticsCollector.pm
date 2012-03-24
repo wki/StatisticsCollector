@@ -22,7 +22,7 @@ use Catalyst qw/
 
 extends 'Catalyst';
 
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 # Configure the application.
 #
@@ -48,6 +48,12 @@ __PACKAGE__->config(
             user => 'postgres',
             password => '',
             pg_enable_utf8 => 1,
+        },
+    },
+    
+    'Controller::HTML::FormFu' => {
+        model_stash => {
+            schema => 'StatisticsCollector::Schema',
         },
     },
 );
