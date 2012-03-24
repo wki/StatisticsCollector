@@ -98,21 +98,31 @@ column default_graph_type => {
 
 =head2 measures
 
-A L<Sensor|StatisticsCollector::Schema::Result::Sensor> might mave many L<Measures|StatisticsCollector::Schema::Result::Measure>,
-every L<Measure|StatisticsCollector::Schema::Result::Measure> belongs to exactly one L<Sensor|StatisticsCollector::Schema::Result::Sensor>
+A L<Sensor|StatisticsCollector::Schema::Result::Sensor> 
+might mave many L<Measures|StatisticsCollector::Schema::Result::Measure>,
+every L<Measure|StatisticsCollector::Schema::Result::Measure> belongs to 
+exactly one L<Sensor|StatisticsCollector::Schema::Result::Sensor>
 
 =cut
 
-has_many   measures       => 'StatisticsCollector::Schema::Result::Measure',       'sensor_id';
+has_many measures => 'StatisticsCollector::Schema::Result::Measure', 'sensor_id';
 
 =head2 latest_measures
 
-A L<Sensor|StatisticsCollector::Schema::Result::Sensor> might mave a L<LatestMeasure|StatisticsCollector::Schema::Result::LatestMeasure>
-Every L<LatestMeasure|StatisticsCollector::Schema::Result::Measure> belongs to exactly one L<Sensor|StatisticsCollector::Schema::Result::Sensor>
+A L<Sensor|StatisticsCollector::Schema::Result::Sensor> might mave a 
+L<LatestMeasure|StatisticsCollector::Schema::Result::LatestMeasure>
+Every L<LatestMeasure|StatisticsCollector::Schema::Result::Measure> belongs to 
+exactly one L<Sensor|StatisticsCollector::Schema::Result::Sensor>
 
 =cut
 
 might_have latest_measure => 'StatisticsCollector::Schema::Result::LatestMeasure', 'sensor_id';
+
+=head2 alarms
+
+=cut
+
+has_many alarms => 'StatisticsCollector::Schema::Result::Alarm', 'alarm_condition_id';
 
 =head1 METHODS
 

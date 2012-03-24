@@ -210,6 +210,16 @@ column specificity => {
     dynamic_default_on_update => \&calculate_specificity_from_mask,
 };
 
+=head1 RELATIONS
+
+=cut
+
+=head2 alarms
+
+=cut
+
+has_many alarms => 'StatisticsCollector::Schema::Result::Alarm', 'alarm_condition_id';
+
 =head1 METHODS
 
 =cut

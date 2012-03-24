@@ -6,7 +6,7 @@ use lib "$FindBin::Bin/../lib";
 use StatisticsCollector::Schema;
 
 my $schema = StatisticsCollector::Schema->connect(
-    'dbi:Pg:dbname=stat;host=127.0.0.1',
+    'dbi:Pg:dbname=statistics;host=127.0.0.1',
     'postgres', ''
 );
 
@@ -21,7 +21,6 @@ my $dh = DH->new({
 
 say 'INFO: version storage installed' if $dh->version_storage_is_installed;
 say 'INFO: DB-Version: ', $dh->database_version if $dh->version_storage_is_installed;
-
 
 if (!$dh->version_storage_is_installed) {
     say 'version not in storage, install DB';

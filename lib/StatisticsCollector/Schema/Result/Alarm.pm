@@ -39,14 +39,14 @@ primary_column alarm_id => {
 =head2 alarm_condition_id
 
 indicates the L<AlarmCondition|StatisticsCollector::Schema::Result::AlarmCondition>
- that fired this alarm
+that fired this alarm
 
 =cut
 
 column alarm_condition_id => {
     data_type => 'int',
     is_nullable => 0,
-}
+};
 
 =head2 sensor_id
 
@@ -58,7 +58,7 @@ that fired this alarm
 column sensor_id => {
     data_type => 'int',
     is_nullable => 0,
-}
+};
 
 =head2 starting_at
 
@@ -93,6 +93,23 @@ column ending_at => {
     data_type => 'timestamp', timezone => 'local',
     is_nullable => 1,
 };
+
+=head1 RELATIONS
+
+=cut
+
+=head2 alarm_condition
+
+=cut
+
+belongs_to alarm_condition => 'StatisticsCollector::Schema::Result::AlarmCondition', 'alarm_condition_id';
+
+=head2 sensor
+
+=cut
+
+belongs_to sensor => 'StatisticsCollector::Schema::Result::Sensor', 'sensor_id';
+
 
 =head1 METHODS
 

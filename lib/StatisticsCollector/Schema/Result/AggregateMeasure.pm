@@ -29,10 +29,16 @@ table 'virtual_aggregate_measure';
 
 =head1 COLUMNS
 
-inherits all columns from L<Measure|StatisticsCollector::Schema::Result::Measure>
-and adds a few more.
+=cut
+
+=head2 sensor_id
 
 =cut
+
+column sensor_id => {
+    data_type => 'int',
+    is_nullable => 0,
+};
 
 =head2 starting_at
 
@@ -86,6 +92,16 @@ column nr_values => {
     is_nullable => 0,
 };
 
+=head1 RELATIONS
+
+=cut
+
+=head2 sensor
+
+=cut
+
+belongs_to sensor => 'StatisticsCollector::Schema::Result::Sensor', 'sensor_id';
+
 
 __PACKAGE__->result_source_instance->is_virtual(1);
 
@@ -101,7 +117,8 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 #   - outer        generates the aggregates wanted
 #
 __PACKAGE__->result_source_instance->view_definition(q{
-select range.*,
+select s.sensor_id,
+       range.*,
        min(m.min_value) as min_value,
        max(m.max_value) as max_value,
        sum(m.sum_value) as sum_value,
@@ -113,10 +130,11 @@ from ( /* mid */
              
        from (/* inner */ select ?::text as unit, generate_series(1,?) as i) x
      ) range
+     left join (values (?::integer)) s(sensor_id)
      left join measure m on (m.starting_at   >= range.starting_at
                              and m.ending_at <= range.ending_at
-                             and m.sensor_id = ?)
-group by range.starting_at, range.ending_at
+                             and m.sensor_id = s.sensor_id)
+group by s.sensor_id, range.starting_at, range.ending_at
 order by range.starting_at
 });
 

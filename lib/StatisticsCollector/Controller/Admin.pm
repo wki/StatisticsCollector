@@ -27,10 +27,12 @@ sub index :Path :Args(0) {
     $c->stash->{alarm_conditions} = [
         $c->model('DB::AlarmCondition')
           ->search(
+              undef,
               {
-              },
-              {
-                  order_by => [ {-desc => 'severity_level'}, {-desc => 'specificity'} ],
+                  order_by => [ 
+                      {-desc => 'severity_level'},
+                      {-desc => 'specificity'},
+                  ],
               })
           ->all
     ];
