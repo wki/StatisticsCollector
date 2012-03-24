@@ -4,34 +4,82 @@ use DBIx::Class::Candy
 
 __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
+=head1 NAME
+
+StatisticsCollector::Schema::Result::AggregateMeasure - Virtual Table definition
+
+=head1 SYNOPSIS
+
+    # assume that $sensor holds a Sensor row
+    my @measures = $sensor->aggregate_measures('hour', $nr_of_hours);
+
+=head1 DESCRIPTION
+
+Collects and aggregates a given number of 
+L<Measures|StatisticsCollector::Schema::Result::Measure> 
+into a given interval and returns the requested number of records.
+
+=head1 TABLE
+
+virtual_aggregate_measure
+
+=cut
+
 table 'virtual_aggregate_measure';
+
+=head1 COLUMNS
+
+inherits all columns from L<Measure|StatisticsCollector::Schema::Result::Measure>
+and adds a few more.
+
+=cut
+
+=head2 starting_at
+
+=cut
 
 column starting_at => {
     data_type => 'datetime', timezone => 'local',
 };
 
+=head2 ending_at
+
+=cut
+
 column ending_at => {
     data_type => 'datetime', timezone => 'local',
 };
 
-column min_value => {
-    data_type => 'int',
-};
+=head2 min_value
+
+=cut
 
 column min_value => {
     data_type => 'int',
     is_nullable => 0,
 };
+
+=head2 max_value
+
+=cut
 
 column max_value => {
     data_type => 'int',
     is_nullable => 0,
 };
 
+=head2 sum_value
+
+=cut
+
 column sum_value => {
     data_type => 'int',
     is_nullable => 0,
 };
+
+=head2 nr_values
+
+=cut
 
 column nr_values => {
     data_type => 'int',
@@ -71,5 +119,16 @@ from ( /* mid */
 group by range.starting_at, range.ending_at
 order by range.starting_at
 });
+
+=head1 AUTHOR
+
+Wolfgang Kinkeldei
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
 
 1;

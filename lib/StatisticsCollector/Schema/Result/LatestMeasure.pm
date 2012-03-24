@@ -5,33 +5,107 @@ use DBIx::Class::Candy
 
 __PACKAGE__->table_class('DBIx::Class::ResultSource::View');
 
+=head1 NAME
+
+StatisticsCollector::Schema::Result::LatestMeasure - Virtual Table definition
+
+=head1 SYNOPSIS
+
+    my $latest = $sensor->latest_measure;
+
+=head1 DESCRIPTION
+
+A view that relates a given sensor to the latest measure (if any). The latest
+measure is also compared against alarm conditions in order to reflect the
+sanity of the latest measure read.
+
+=head1 TABLE
+
+virtual_latest_measure
+
+Extends L<Measure|StatisticsCollector::Schema::Result::Measure>
+
+=cut
+
 table 'virtual_latest_measure';
 
-# all columns defined in base class, plus:
+=head1 COLUMNS
+
+inherits all columns from L<Measure|StatisticsCollector::Schema::Result::Measure>
+and adds a few more.
+
+=cut
+
+=head2 measure_age_alarm
+
+indicates that the measure age is higher than allowed
+
+=cut
 
 column measure_age_alarm => {
     data_type => 'boolean',
 };
 
+=head2 latest_value_gt_alarm
+
+indicates that the measure age is higher than allowed
+
+=cut
+
 column latest_value_gt_alarm => {
     data_type => 'boolean',
 };
+
+=head2 latest_value_lt_alarm
+
+indicates that the measure age is higher than allowed
+
+=cut
 
 column latest_value_lt_alarm => {
     data_type => 'boolean',
 };
 
+=head2 min_value_gt_alarm
+
+indicates that the measure age is higher than allowed
+
+=cut
+
 column min_value_gt_alarm => {
     data_type => 'boolean',
 };
+
+=head2 max_value_lt_alarm
+
+indicates that the measure age is higher than allowed
+
+=cut
 
 column max_value_lt_alarm => {
     data_type => 'boolean',
 };
 
+=head2 max_severity_level
+
+indicates that the measure age is higher than allowed
+
+=cut
+
 column max_severity_level => {
     data_type => 'int',
 };
+
+=head1 RELATIONS
+
+=cut
+
+=head2 sensor
+
+every L<Sensor|StatisticsCollector::Schema::Result::Sensor> might have a L<LatestMeasure|StatisticsCollector::Schema::Result::LatestMeasure>
+and every L<LatestMeasure|StatisticsCollector::Schema::Result::LatestMeasure> belongs to exactly one L<Sensor|StatisticsCollector::Schema::Result::Sensor>.
+
+=cut
 
 belongs_to sensor => 'StatisticsCollector::Schema::Result::Sensor', 'sensor_id';
 
@@ -92,6 +166,16 @@ __PACKAGE__->result_source_instance->view_definition(q{
                    ) ac on ac.sensor_id = m.sensor_id
 });
 
+=head1 METHODS
+
+=cut
+
+=head2 has_alarm
+
+aggregates all *_alarm columns above into one boolean value which is returned.
+
+=cut
+
 sub has_alarm {
     my $self = shift;
     
@@ -101,4 +185,16 @@ sub has_alarm {
       ? 1
       : 0;
 }
+
+=head1 AUTHOR
+
+Wolfgang Kinkeldei
+
+=head1 LICENSE
+
+This library is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
+
 1;

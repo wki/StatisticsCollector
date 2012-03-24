@@ -73,20 +73,20 @@ __PACKAGE__->config(
 sub minify :Private {
     my $text = shift;
     
-    my $cmd = first { -f }
-              qw(/var/lib/gems/1.8/bin/sass /usr/bin/sass);
-    
-    my $sass = Proc::Class->new(
-        cmd => $cmd,
-        argv => [ qw(--stdin --scss) ],
-    );
-    
-    $sass->print_stdin($text);
-    $sass->close_stdin;
-    
-    $text = $sass->slurp_stdout;
-    
-    $sass->waitpid;
+    # my $cmd = first { -f }
+    #           qw(/var/lib/gems/1.8/bin/sass /usr/bin/sass);
+    # 
+    # my $sass = Proc::Class->new(
+    #     cmd => $cmd,
+    #     argv => [ qw(--stdin --scss) ],
+    # );
+    # 
+    # $sass->print_stdin($text);
+    # $sass->close_stdin;
+    # 
+    # $text = $sass->slurp_stdout;
+    # 
+    # $sass->waitpid;
     
     return CSS::Minifier::XS::minify($text);
 }
