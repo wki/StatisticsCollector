@@ -52,8 +52,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
 
 # add measures s1: 2 measures t2, t1 / s2: 1 measure: t1 / s3: 1 measure: t0
 {
-
-    # this time might get changed during tests!
+    # this time will change during tests!
     my $test_time = $t2->clone->set( minute => 13, second => 14 );
 
     no warnings 'redefine';
@@ -111,29 +110,28 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
             updated_at   => $test_time,
             ending_at    => $testcase->{time}->clone->add( hours => 1 ),
         );
+        my %alarm_values = (
+            alarm_condition_id    => undef,
+            measure_age_alarm     => 0,
+            latest_value_gt_alarm => 0,
+            latest_value_lt_alarm => 0,
+            min_value_gt_alarm    => 0,
+            max_value_lt_alarm    => 0,
+            max_severity_level    => undef,
+        );
 
         my $measure;
         lives_ok { $measure = $sensor->add_measure($testcase->{value}) } "$name: add measure lives";
 
         is_fields $measure, \%measure_values,
                   "$name: measure look good";
-        
+
         my $latest_measure;
         # using find() is necessary here because ->latest_measure gests cached otherwise!
         lives_ok { $latest_measure = Sensor->find($sensor->id)->latest_measure }
                  "$name: latest_measure lives";
-        
-        is_fields $latest_measure,
-                  {
-                      %measure_values,
-                      alarm_condition_id           => undef,
-                      measure_age_alarm            => 0,
-                      latest_value_gt_alarm        => 0,
-                      latest_value_lt_alarm        => 0,
-                      min_value_gt_alarm           => 0,
-                      max_value_lt_alarm           => 0,
-                      max_severity_level           => undef,
-                  },
+
+        is_fields $latest_measure, { %measure_values, %alarm_values },
                   "$name: latest measure looks goog";
         is Measure->count, $testcase->{count}, "$name: $testcase->{count} record(s) in measure table";
     }
@@ -148,25 +146,27 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
 
     my $ac = StatisticsCollector::Schema::Result::AlarmCondition->new();
     is $ac->sensor_mask, 'abc', 'mocking of mask works';
-
     is $ac->calculate_specificity_from_mask, 8, 'mask w/o % is 8';
 
-    $sensor_mask = '%/keller/temp';
-    is $ac->calculate_specificity_from_mask, 7, 'mask %/a/b is 7';
-    $sensor_mask = 'bla/%/temp';
-    is $ac->calculate_specificity_from_mask, 6, 'mask a/%/b is 6';
-    $sensor_mask = 'bla/foo/%';
-    is $ac->calculate_specificity_from_mask, 5, 'mask a/b/% is 5';
+    my @testcases = (
+        { mask => 'abc/dev/ghi',   specificity => 8 },
 
-    $sensor_mask = '%/%/temp';
-    is $ac->calculate_specificity_from_mask, 4, 'mask %/%/a is 4';
-    $sensor_mask = '%/xxx/%';
-    is $ac->calculate_specificity_from_mask, 3, 'mask %/b/$ is 3';
-    $sensor_mask = 'bla/%/%';
-    is $ac->calculate_specificity_from_mask, 2, 'mask c/%/% is 2';
+        { mask => '%/keller/temp', specificity => 7 },
+        { mask => 'bla/%/temp',    specificity => 6 },
+        { mask => 'bla/foo/%',     specificity => 5 },
 
-    $sensor_mask = '%/%/%';
-    is $ac->calculate_specificity_from_mask, 1, 'mask %/%/% is 1';
+        { mask => '%/%/temp',      specificity => 4 },
+        { mask => '%/keller/%',    specificity => 3 },
+        { mask => 'foo/%/%',       specificity => 2 },
+
+        { mask => '%/%/%',         specificity => 1 },
+    );
+
+    foreach my $testcase (@testcases) {
+        $sensor_mask = $testcase->{mask};
+        is $ac->calculate_specificity_from_mask, $testcase->{specificity},
+           "$testcase->{mask} is $testcase->{specificity}";
+    }
 }
 
 # add some alarms and see if latest measure reports them
