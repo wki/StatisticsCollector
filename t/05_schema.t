@@ -8,7 +8,7 @@ use Test::DBIx::Class;
 # ensure DB is empty
 is Sensor->count, 0, 'no records in sensor table';
 
-my ( $sensor1, $sensor2, $sensor3 );
+our ($sensor1, $sensor2, $sensor3);
 
 # today's times are used. We simply assume that our DB is also operating in our local time zone
 # t2 = current hour - 2, t1 = current hour - 1, t0 = current hour, ta = current hour + 1
@@ -21,49 +21,33 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
 
 # add some sensors: 1=erlangen/keller/temperatur, 2=erlangen/garage/temperatur, 3=dallas/pool/temperatur
 {
+    my @testcases = (
+        { name => 'add e/k/t 1st time', sensor_name => 'erlangen/keller/temperatur', count => 1, id => 1 },
+        { name => 'add e/k/t 2nd time', sensor_name => 'erlangen/keller/temperatur', count => 1, id => 1 },
+        { name => 'add e/g/t 1st time', sensor_name => 'erlangen/garage/temperatur', count => 2, id => 2 },
+        { name => 'add e/g/t end time', sensor_name => 'erlangen/garage/temperatur', count => 2, id => 2 },
+        { name => 'add d/p/t 1st time', sensor_name => 'dallas/pool/temperatur',     count => 3, id => 3 },
+        { name => 'add d/p/t end time', sensor_name => 'dallas/pool/temperatur',     count => 3, id => 3 },
+    );
 
-    # add a sensor for the first time
-    ok $sensor1 =
-      Sensor->find_or_create( { name => 'erlangen/keller/temperatur' } ),
-      'find or create sensor';
-    is_result $sensor1;
-    is_fields [qw(sensor_id name)], $sensor1,
-      [ 1, 'erlangen/keller/temperatur' ],
-      'sensor fields look good';
-    is Sensor->count, 1, '1 record in sensor table';
+    foreach my $testcase (@testcases) {
+        my $name = $testcase->{name};
 
-    # add same sensor name
-    undef $sensor1;
-    ok $sensor1 =
-      Sensor->find_or_create( { name => 'erlangen/keller/temperatur' } ),
-      'find or create sensor 2';
-    is_result $sensor1;
-    is_fields [qw(sensor_id name)], $sensor1,
-      [ 1, 'erlangen/keller/temperatur' ],
-      'sensor 2 fields look good';
-    is Sensor->count, 1, 'still 1 record in sensor table';
-
-    # add another sensor name
-    ok $sensor2 =
-      Sensor->find_or_create( { name => 'erlangen/garage/temperatur' } ),
-      'find or create sensor 3';
-    is_result $sensor2;
-    is_fields [qw(sensor_id name)], $sensor2,
-      [ 2, 'erlangen/garage/temperatur' ],
-      'sensor 3 fields look good';
-    is Sensor->count, 2, '2 records in sensor table';
-
-    # add third sensor name
-    ok $sensor3 =
-      Sensor->find_or_create( { name => 'dallas/pool/temperatur' } ),
-      'find or create sensor 4';
-    is_result $sensor3;
-    is_fields [qw(sensor_id name)], $sensor3, [ 3, 'dallas/pool/temperatur' ],
-      'sensor 4 fields look good';
-    is Sensor->count, 3, '3 records in sensor table';
+        my $sensor;
+        ok $sensor =
+          Sensor->find_or_create( { name => $testcase->{sensor_name} } ),
+          "$name: find or create sensor";
+        is_fields [qw(sensor_id name)], $sensor,
+          [ $testcase->{id}, $testcase->{sensor_name} ],
+          "$name: sensor fields look good";
+        is Sensor->count, $testcase->{count}, "$name: $testcase->{count} record(s) in sensor table";
+    }
 
     # no measures so far
     is Measure->count, 0, 'no records in measure table';
+
+    # put sensors into global variables
+    ($sensor1, $sensor2, $sensor3) = Sensor->search(undef, {order_by => 'sensor_id'})->all;
 }
 
 # add measures s1: 2 measures t2, t1 / s2: 1 measure: t1 / s3: 1 measure: t0
@@ -77,193 +61,81 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     local *DBIx::Class::TimeStamp::get_timestamp =
       sub { return $test_time->clone };
 
-    # multiple measures within one hour reside in the same record
-    {
+    my @testcases = (
+        # sensor 1 hour t2
+        {
+            name => 's1 t2 value 1', sensor => $sensor1, time => $t2, minute => 13, second => 14, value => 42,
+            min => 42, max => 42, sum => 42, nr => 1, count => 1,
+        },
+        {
+            name => 's1 t2 value 2', sensor => $sensor1, time => $t2, minute => 42, second => 16, value => 10,
+            min => 10, max => 42, sum => 52, nr => 2, count => 1,
+        },
+        {
+            name => 's1 t2 value 3', sensor => $sensor1, time => $t2, minute => 59, second => 59, value => 60,
+            min => 10, max => 60, sum => 112, nr => 3, count => 1,
+        },
+
+        # sensor 1 hour t1
+        {
+            name => 's1 t1 value 1', sensor => $sensor1, time => $t1, minute => 0, second => 0, value => 13,
+            min => 13, max => 13, sum => 13, nr => 1, count => 2,
+        },
+
+        # sensor 2 hour t1
+        {
+            name => 's2 t1 value 1', sensor => $sensor2, time => $t1, minute => 0, second => 0, value => 26,
+            min => 26, max => 26, sum => 26, nr => 1, count => 3,
+        },
+        {
+            name => 's2 t1 value 2', sensor => $sensor2, time => $t1, minute => 13, second => 0, value => -42,
+            min => -42, max => 26, sum => -16, nr => 2, count => 3,
+        },
+
+    );
+
+    foreach my $testcase (@testcases) {
+        my $name = $testcase->{name};
+        my $sensor = $testcase->{sensor};
+
+        $test_time = $testcase->{time}->clone->set( minute => $testcase->{minute}, second => $testcase->{second} );
+
+        my %measure_values = (
+            sensor_id    => $sensor->id,
+            latest_value => $testcase->{value},
+            min_value    => $testcase->{min},
+            max_value    => $testcase->{max},
+            sum_value    => $testcase->{sum},
+            nr_values    => $testcase->{nr},
+            starting_at  => $testcase->{time},
+            updated_at   => $test_time,
+            ending_at    => $testcase->{time}->clone->add( hours => 1 ),
+        );
+
         my $measure;
-        lives_ok { $measure = $sensor1->add_measure(42) } 'add measure lives';
-        is_result $measure;
-        is_fields $measure,
-          {
-            sensor_id    => 1,
-            latest_value => 42,
-            min_value    => 42,
-            max_value    => 42,
-            sum_value    => 42,
-            nr_values    => 1,
-            starting_at  => $t2,
-            updated_at   => $test_time,
-            ending_at    => $t1,
-          },
-          'measure 1 fields look good';
-        is Measure->count, 1, '1 record in measure table';
+        lives_ok { $measure = $sensor->add_measure($testcase->{value}) } "$name: add measure lives";
 
-        undef $measure;
-        $test_time->set( minute => 42 );
-        lives_ok { $measure = $sensor1->add_measure(10) } 'add measure 2 lives';
-        $measure->discard_changes;
-        is_fields $measure,
-          {
-            sensor_id    => 1,
-            latest_value => 10,
-            min_value    => 10,
-            max_value    => 42,
-            sum_value    => 52,
-            nr_values    => 2,
-            starting_at  => $t2,
-            updated_at   => $test_time,
-            ending_at    => $t1,
-          },
-          'measure 2 fields look good';
-        is Measure->count, 1, '1 record in measure table (2)';
-
-        undef $measure;
-        $test_time->set( minute => 59 );
-        lives_ok { $measure = $sensor1->add_measure(60) } 'add measure 3 lives';
-        is_fields $measure,
-          {
-            sensor_id    => 1,
-            latest_value => 60,
-            min_value    => 10,
-            max_value    => 60,
-            sum_value    => 112,
-            nr_values    => 3,
-            starting_at  => $t2,
-            updated_at   => $test_time,
-            ending_at    => $t1,
-          },
-          'measure 3 fields look good';
-        is Measure->count, 1, '1 record in measure table (3)';
-    }
-
-    # adding a measure in another hour must add new record
-    {
-        my $measure;
-        $test_time = $t1->clone->set( minute => 0 );
-        lives_ok { $measure = $sensor1->add_measure(13) } 'add measure 4 lives';
-        is_fields $measure,
-          {
-            sensor_id    => 1,
-            latest_value => 13,
-            min_value    => 13,
-            max_value    => 13,
-            sum_value    => 13,
-            nr_values    => 1,
-            starting_at  => $t1,
-            updated_at   => $test_time,
-            ending_at    => $t0,
-          },
-          'measure 4 fields look good';
-        is Measure->count, 2, '2 records in measure table';
-    }
-
-    # adding a measure for another sensor does not influence the others
-    {
-        my $measure;
-        $test_time = $t1->clone->set( minute => 0 );
-        lives_ok { $measure = $sensor2->add_measure(26) } 'add measure 5 lives';
-        is_fields $measure,
-          {
-            sensor_id    => 2,
-            latest_value => 26,
-            min_value    => 26,
-            max_value    => 26,
-            sum_value    => 26,
-            nr_values    => 1,
-            starting_at  => $t1,
-            updated_at   => $test_time,
-            ending_at    => $t0,
-          },
-          'measure 5 fields look good';
-        is Measure->count, 3, '3 records in measure table';
-
-    }
-
-    # check latest measure
-    {
-
-        # sensor 1 has 2 measures: 12:00 and 13:00
-        my $measure;
-        lives_ok { $measure = $sensor1->latest_measure }
-        'sensor 1 latest_measure lives';
-        is_fields $measure,
-          {
-            sensor_id                    => 1,
-            latest_value                 => 13,
-            min_value                    => 13,
-            max_value                    => 13,
-            sum_value                    => 13,
-            nr_values                    => 1,
-            starting_at                  => $t1,
-            updated_at                   => $test_time,
-            ending_at                    => $t0,
-            measure_age_alarm            => 0,
-            latest_value_gt_alarm        => 0,
-            latest_value_lt_alarm        => 0,
-            min_value_gt_alarm           => 0,
-            max_value_lt_alarm           => 0,
-            max_severity_level           => undef,
-          },
-          'sensor 1 latest_measure fields look good';
-
-        # sensor 2 has 1 measure: 13:00
-        undef $measure;
-        lives_ok { $measure = $sensor2->latest_measure }
-        'sensor 2 latest_measure lives';
-        is_fields $measure,
-          {
-            sensor_id                    => 2,
-            latest_value                 => 26,
-            min_value                    => 26,
-            max_value                    => 26,
-            sum_value                    => 26,
-            nr_values                    => 1,
-            starting_at                  => $t1,
-            updated_at                   => $test_time,
-            ending_at                    => $t0,
-            measure_age_alarm            => 0,
-            latest_value_gt_alarm        => 0,
-            latest_value_lt_alarm        => 0,
-            min_value_gt_alarm           => 0,
-            max_value_lt_alarm           => 0,
-            max_severity_level           => undef,
-          },
-          'sensor 2 latest_measure fields look good';
-
-        # sensor 3 has no measures so far
-        undef $measure;
-        lives_ok { $measure = $sensor3->latest_measure }
-        'sensor 3 latest_measure lives';
-        ok !defined $measure, 'sensor 3 measure is undefined';
-
-        # add a measure with negative value for sensor 3
-        undef $measure;
-        $test_time = $t0->clone->set( minute => 12 );
-        lives_ok { $measure = $sensor3->add_measure(-42) }
-        'add measure 6 lives';
-        is Measure->count, 4, '4 records in measure table';
-
-        undef $measure;
-        lives_ok { $measure = $sensor3->latest_measure }
-        'sensor 3 latest_measure lives 2';
-        is_fields $measure,
-          {
-            sensor_id                    => 3,
-            latest_value                 => -42,
-            min_value                    => -42,
-            max_value                    => -42,
-            sum_value                    => -42,
-            nr_values                    => 1,
-            starting_at                  => $t0,
-            updated_at                   => $test_time,
-            ending_at                    => $ta,
-            measure_age_alarm            => 0,
-            latest_value_gt_alarm        => 0,
-            latest_value_lt_alarm        => 0,
-            min_value_gt_alarm           => 0,
-            max_value_lt_alarm           => 0,
-            max_severity_level           => undef,
-          },
-          'sensor 3 latest_measure fields look good';
+        is_fields $measure, \%measure_values,
+                  "$name: measure look good";
+        
+        my $latest_measure;
+        # using find() is necessary here because ->latest_measure gests cached otherwise!
+        lives_ok { $latest_measure = Sensor->find($sensor->id)->latest_measure }
+                 "$name: latest_measure lives";
+        
+        is_fields $latest_measure,
+                  {
+                      %measure_values,
+                      alarm_condition_id           => undef,
+                      measure_age_alarm            => 0,
+                      latest_value_gt_alarm        => 0,
+                      latest_value_lt_alarm        => 0,
+                      min_value_gt_alarm           => 0,
+                      max_value_lt_alarm           => 0,
+                      max_severity_level           => undef,
+                  },
+                  "$name: latest measure looks goog";
+        is Measure->count, $testcase->{count}, "$name: $testcase->{count} record(s) in measure table";
     }
 }
 
@@ -273,26 +145,26 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     no warnings 'redefine';
     local *StatisticsCollector::Schema::Result::AlarmCondition::sensor_mask =
         sub { return $sensor_mask };
-    
+
     my $ac = StatisticsCollector::Schema::Result::AlarmCondition->new();
     is $ac->sensor_mask, 'abc', 'mocking of mask works';
-    
+
     is $ac->calculate_specificity_from_mask, 8, 'mask w/o % is 8';
-    
+
     $sensor_mask = '%/keller/temp';
     is $ac->calculate_specificity_from_mask, 7, 'mask %/a/b is 7';
     $sensor_mask = 'bla/%/temp';
     is $ac->calculate_specificity_from_mask, 6, 'mask a/%/b is 6';
     $sensor_mask = 'bla/foo/%';
     is $ac->calculate_specificity_from_mask, 5, 'mask a/b/% is 5';
-    
+
     $sensor_mask = '%/%/temp';
     is $ac->calculate_specificity_from_mask, 4, 'mask %/%/a is 4';
     $sensor_mask = '%/xxx/%';
     is $ac->calculate_specificity_from_mask, 3, 'mask %/b/$ is 3';
     $sensor_mask = 'bla/%/%';
     is $ac->calculate_specificity_from_mask, 2, 'mask c/%/% is 2';
-    
+
     $sensor_mask = '%/%/%';
     is $ac->calculate_specificity_from_mask, 1, 'mask %/%/% is 1';
 }
@@ -317,6 +189,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
         starting_at                  => $t1,
         updated_at                   => $t1->clone->set( minute => 0 ),
         ending_at                    => $t0,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 0,
         latest_value_gt_alarm        => 0,
         latest_value_lt_alarm        => 0,
@@ -334,7 +207,8 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     );
     is AlarmCondition->count, 1, 'one alarm condition defined';
     is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure, },
+      { %sensor1_measure,
+        alarm_condition_id => undef },
       'nonsense alarm is not seen';
 
     # a mask-matching but null-valued alarm shows but does not warn
@@ -558,6 +432,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 1,
         max_severity_level           => 5,
       },
@@ -567,6 +442,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 1,
         max_severity_level           => 5,
       },
@@ -600,6 +476,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 1,
         max_severity_level           => 5,
       },
@@ -609,6 +486,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 1,
         max_severity_level           => 5,
       },
@@ -618,6 +496,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 1,
         ### min_value_gt_alarm           => 1,
         max_severity_level           => 5,
@@ -628,33 +507,36 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 2,
         ### measure_age_alarm            => 1,
         min_value_gt_alarm           => 1,
         max_severity_level           => 9,
       },
       'reported severity level is maximum';
-    
+
     # multiple alarms let the most-specific fire
     $alarm2->update( { severity_level => 5 } );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 1,
         min_value_gt_alarm           => 0,
         max_severity_level           => 5,
       },
       'same severity level reports one';
-    
+
     $alarm1->update( { max_measure_age_minutes => undef } );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 0,
         min_value_gt_alarm           => 0,
         max_severity_level           => undef,
       },
       'most specific alarm keeps quiet if not firing';
-    
+
 
     ### multiple alarms let the most-specific of highest severity level fire
     my $alarm3 = AlarmCondition->create(
@@ -664,31 +546,34 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
               severity_level => 2,
           }
       );
-    
+
     ### currently broken...
     ### is_fields $sensor1->discard_changes->latest_measure,
     ###   {
     ###     %sensor1_measure,
+    ###     alarm_condition_id           => 1,
     ###     measure_age_alarm            => 0,
     ###     min_value_gt_alarm           => 1,
     ###     max_severity_level           => 2,
     ###   },
     ###   'lower severity level reports if higher keeps silent';
-    
+
     $alarm1->update( { min_value_gt => 30 } );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 0,
         min_value_gt_alarm           => 1,
         max_severity_level           => 5,
       },
       'higher severity alarm overrides lower severity one if fired';
-    
+
     $alarm3->update( { sensor_mask => 'erlangen/keller/temperatur' } );
     is_fields $sensor1->discard_changes->latest_measure,
       {
         %sensor1_measure,
+        alarm_condition_id           => 1,
         measure_age_alarm            => 0,
         min_value_gt_alarm           => 1,
         max_severity_level           => 5,
