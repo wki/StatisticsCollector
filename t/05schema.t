@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use DateTime;
+use List::MoreUtils 'zip';
 use Test::More;
 use Test::Exception;
 use Test::DBIx::Class;
@@ -91,6 +92,11 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
             min => -42, max => 26, sum => -16, nr => 2, count => 3,
         },
 
+        # sensor 3 hour t0
+        {
+            name => 's3 t0 value 1', sensor => $sensor3, time => $t0, minute => 0, second => 0, value => 42,
+            min => 42, max => 42, sum => 42, nr => 1, count => 4,
+        },
     );
 
     foreach my $testcase (@testcases) {
@@ -173,10 +179,107 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
 {
 
 # 1: erlangen/keller/temperatur 2 measures, 1 and 2 hours age, latest: value = 13 .. 13
-# 2: erlangen/garage/temperatur 1 measure,  1 hour age,        latest: value = 26 .. 26
+# 2: erlangen/garage/temperatur 1 measure,  1 hour age,        latest: value = -42 .. 26
 # 3: dallas/pool/temperatur     1 measure,  0 hour age,        latest: value = 42 .. 42
 
     is AlarmCondition->count, 0, 'no alarm conditions defined yet';
+    
+    my @testcases = (
+        {
+            name => 'not-matching not-firing',
+            alarm_conditions => [
+                # id mask              age    lat-gt lat-lt min-gt max-lt severity
+                [ 1, 'non/sense/mask', undef, undef, undef, undef, undef, 2 ],
+            ],
+            expect => {},
+        },
+        {
+            name => 'fully-matching not-firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', undef, undef, undef, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+        {
+            name => '1-matching not-firing',
+            alarm_conditions => [
+                [ 1, '%/keller/temperatur', undef, undef, undef, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+        {
+            name => '2-matching not-firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/%/temperatur', undef, undef, undef, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+        {
+            name => '3-matching not-firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/%', undef, undef, undef, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+
+        {
+            name => 'fully-matching min-value-gt firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, undef, 20, 1000, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, min_value_gt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching min-value-gt higher firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, undef, 14, 1000, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, min_value_gt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching min-value-gt equal firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, undef, 13, 1000, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, min_value_gt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching min-value-gt range not-firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, undef, 12, 1000, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+
+        {
+            name => 'fully-matching latest-value-gt firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, 20, undef, undef, 1000, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching latest-value-gt higher firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, 14, undef, undef, 1000, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching latest-value-gt equal firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, 13, undef, undef, 1000, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching latest-value-gt range not-firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, 12, undef, undef, 1000, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+    );
 
     my $alarm1;
     my %sensor1_measure = (
@@ -189,7 +292,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
         starting_at                  => $t1,
         updated_at                   => $t1->clone->set( minute => 0 ),
         ending_at                    => $t0,
-        alarm_condition_id           => 1,
+        alarm_condition_id           => undef,
         measure_age_alarm            => 0,
         latest_value_gt_alarm        => 0,
         latest_value_lt_alarm        => 0,
@@ -198,136 +301,27 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
         max_severity_level           => undef,
     );
 
-    # a mask-non-matching alarm does neither show up not warn
-    $alarm1 = AlarmCondition->create(
-        {
-            sensor_mask    => 'non/sense/mask',    # should never match
-            severity_level => 5,
+    foreach my $testcase (@testcases) {
+        my $name = $testcase->{name};
+        
+        AlarmCondition->delete;
+        
+        foreach my $alarm_condition (@{$testcase->{alarm_conditions}}) {
+            my @fields = qw(alarm_condition_id sensor_mask
+                            max_measure_age_minutes
+                            latest_value_gt latest_value_lt
+                            min_value_gt max_value_lt
+                            severity_level);
+            my @values = @{$alarm_condition};
+            AlarmCondition->create( { zip @fields, @values } );
         }
-    );
-    is AlarmCondition->count, 1, 'one alarm condition defined';
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure,
-        alarm_condition_id => undef },
-      'nonsense alarm is not seen';
-
-    # a mask-matching but null-valued alarm shows but does not warn
-    $alarm1->update( { sensor_mask => 'erlangen/keller/temperatur' } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'fully masked alarm is seen';
-
-    $alarm1->update( { sensor_mask => '%/keller/temperatur' } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'begin-masked alarm is seen';
-
-    $alarm1->update( { sensor_mask => 'erlangen/%/temperatur' } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'mid-masked alarm is seen';
-
-    $alarm1->update( { sensor_mask => 'erlangen/keller/%' } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'end-masked alarm is seen';
-
-    # a mask-matching and out-of-range-valued alarm shows but does not warn
-    $alarm1->update(
-        {
-            sensor_mask             => 'erlangen/keller/temperatur',
-            max_measure_age_minutes => 121,
-            min_value_gt            => -1000,
-            max_value_lt            => 1000,
-            latest_value_gt         => -1000,
-            latest_value_lt         => 1000,
-        }
-    );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'in-range alarm is seen';
-
-    # min-gt warning
-    $alarm1->update(
-        {
-            sensor_mask             => 'erlangen/keller/temperatur',
-            max_measure_age_minutes => 6_000,
-            min_value_gt            => 20,
-            max_value_lt            => 1_000,
-        }
-    );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        min_value_gt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'min-gt alarm is fired for values outside range';
-
-    $alarm1->update( { min_value_gt => 14, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        min_value_gt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'min-gt alarm is fired for edge values outside range';
-
-    $alarm1->update( { min_value_gt => 13, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        min_value_gt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'min-gt alarm is fired for equal values';
-
-    $alarm1->update( { min_value_gt => 12, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'min-gt alarm is not fired for edge value inside range';
-
-    # latest-gt warning
-    $alarm1->update(
-        {
-            sensor_mask             => 'erlangen/keller/temperatur',
-            max_measure_age_minutes => 6_000,
-            min_value_gt            => undef,
-            max_value_lt            => undef,
-            latest_value_gt         => 20,
-            latest_value_lt         => 1_000,
-        }
-    );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        latest_value_gt_alarm        => 1,
-        max_severity_level           => 5,
-      },
-      'min-gt alarm is fired for values outside range';
-
-    $alarm1->update( { latest_value_gt => 14, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        latest_value_gt_alarm        => 1,
-        max_severity_level           => 5,
-      },
-      'min-gt alarm is fired for edge values outside range';
-
-    $alarm1->update( { latest_value_gt => 13, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        latest_value_gt_alarm        => 1,
-        max_severity_level           => 5,
-      },
-      'min-gt alarm is fired for equal values';
-
-    $alarm1->update( { latest_value_gt => 12, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'min-gt alarm is not fired for edge value inside range';
+        
+        is_fields $sensor1->discard_changes->latest_measure,
+                  { %sensor1_measure, %{$testcase->{expect}} },
+                  "$name: expected values";
+    }
+    
+    done_testing; exit;
 
     # max-lt warning
     $alarm1->update(
