@@ -185,6 +185,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     is AlarmCondition->count, 0, 'no alarm conditions defined yet';
     
     my @testcases = (
+        # not firing:
         {
             name => 'not-matching not-firing',
             alarm_conditions => [
@@ -222,6 +223,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
             expect => { alarm_condition_id => 1 },
         },
 
+        # min-value-gt
         {
             name => 'fully-matching min-value-gt firing',
             alarm_conditions => [
@@ -251,6 +253,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
             expect => { alarm_condition_id => 1 },
         },
 
+        # latest-value-gt
         {
             name => 'fully-matching latest-value-gt firing',
             alarm_conditions => [
@@ -279,6 +282,92 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
             ],
             expect => { alarm_condition_id => 1 },
         },
+
+        # max-value-lt
+        {
+            name => 'fully-matching max-value-lt firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, undef, undef, 5, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, max_value_lt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching max-value-lt lower firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, undef, undef, 12, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, max_value_lt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching max-value-lt equal firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, undef, undef, 13, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, max_value_lt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching max-value-lt range not-firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, undef, undef, 14, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+
+        # latest-value-lt
+        {
+            name => 'fully-matching latest-value-lt firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, 5, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, latest_value_lt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching latest-value-lt lower firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, 12, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, latest_value_lt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching latest-value-lt equal firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, 13, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, latest_value_lt_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching latest-value-lt range not-firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, undef, 14, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+
+        # age
+        {
+            name => 'fully-matching age 1m firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 1, undef, undef, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, measure_age_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching age 60-m-1 firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 60 + $now->minute - 1, undef, undef, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1, measure_age_alarm => 1, max_severity_level => 2 },
+        },
+        {
+            name => 'fully-matching age 60-m+1 not-firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 60 + $now->minute + 1, undef, undef, undef, undef, 2 ],
+            ],
+            expect => { alarm_condition_id => 1 },
+        },
+        
+        # multiple alarms
+        
     );
 
     my $alarm1;
@@ -323,140 +412,6 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     
     done_testing; exit;
 
-    # max-lt warning
-    $alarm1->update(
-        {
-            sensor_mask             => 'erlangen/keller/temperatur',
-            max_measure_age_minutes => 121,
-            min_value_gt            => -1000,
-            max_value_lt            => 5,
-            latest_value_gt         => -1000,
-            latest_value_lt         => 1000,
-        }
-    );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        max_value_lt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'max-lt alarm is fired for values outside range';
-
-    $alarm1->update( { max_value_lt => 12, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        max_value_lt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'max-lt alarm is fired for edge values outside range';
-
-    $alarm1->update( { max_value_lt => 13, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        max_value_lt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'max-lt alarm is fired for equal values';
-
-    $alarm1->update( { max_value_lt => 14, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'max-lt alarm is not fired for edge value inside range';
-
-    # latest-lt warning
-    $alarm1->update(
-        {
-            sensor_mask             => 'erlangen/keller/temperatur',
-            max_measure_age_minutes => 121,
-            min_value_gt            => -1000,
-            max_value_lt            => 1000,
-            latest_value_gt         => -1000,
-            latest_value_lt         => 5,
-        }
-    );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        latest_value_lt_alarm        => 1,
-        max_severity_level           => 5,
-      },
-      'max-lt alarm is fired for values outside range';
-
-    $alarm1->update( { latest_value_lt => 12, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        latest_value_lt_alarm        => 1,
-        max_severity_level           => 5,
-      },
-      'max-lt alarm is fired for edge values outside range';
-
-    $alarm1->update( { latest_value_lt => 13, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        latest_value_lt_alarm        => 1,
-        max_severity_level           => 5,
-      },
-      'max-lt alarm is fired for equal values';
-
-    $alarm1->update( { latest_value_lt => 14, } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'max-lt alarm is not fired for edge value inside range';
-
-    # age warning
-    $alarm1->update(
-        {
-            sensor_mask             => 'erlangen/keller/temperatur',
-            max_measure_age_minutes => 120,
-            min_value_gt            => -1000,
-            max_value_lt            => 1000,
-            latest_value_gt         => -1000,
-            latest_value_lt         => 1000,
-        }
-    );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'age alarm is not fired for ages in range';
-
-    $alarm1->update( { max_measure_age_minutes => 1 } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 1,
-        max_severity_level           => 5,
-      },
-      'age alarm is fired for ages out of range';
-
-    $alarm1->update( { max_measure_age_minutes => 60 + $now->minute - 1 } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 1,
-        max_severity_level           => 5,
-      },
-      'age alarm is fired for ages just out of range';
-
-    $alarm1->update( { max_measure_age_minutes => 60 + $now->minute + 1 } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      { %sensor1_measure },
-      'age alarm is not fired for ages just in range';
-
-    $alarm1->update(
-        {
-            sensor_mask             => 'erlangen/keller/temperatur',
-            max_measure_age_minutes => 1,
-            min_value_gt            => -1000,
-            max_value_lt            => 1000,
-            latest_value_gt         => -1000,
-            latest_value_lt         => 1000,
-        }
-    );
 
     # multiple alarms work, severity is max
     my $alarm2 = AlarmCondition->create(
