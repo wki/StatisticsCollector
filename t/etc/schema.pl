@@ -9,6 +9,6 @@
     },
     
     schema_class     => 'StatisticsCollector::Schema',
-    resultsets       => [ qw(AlarmCondition Measure Sensor) ],
+    resultsets       => [ qw(Alarm AlarmCondition Measure Sensor) ],
     force_drop_table => 1,
 }

@@ -50,7 +50,7 @@ sub check_and_update {
     
     $self #->result_source->resultset
          ->create({
-             alarm_condition_id => $_->alarm_condition_id,
+             alarm_condition_id => $_->get_column('alarm_condition_id'),
              sensor_id          => $_->sensor_id,
          })
         for values %alarming_but_not_open;
@@ -73,8 +73,9 @@ sub _get_alarming_sensors {
                      ],
                  },
                  {
-                     join => 'latest_measure',
-                     '+column' => [ qw(latest_measure.alarm_condition_id) ],
+                     join      => 'latest_measure',
+                     '+select' => [ qw(latest_measure.alarm_condition_id) ],
+                     '+as'     => [ 'alarm_condition_id' ],
                  })
              ->all;
 }

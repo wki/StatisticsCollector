@@ -59,7 +59,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     no warnings 'redefine';
     local *DateTime::now = sub { return $test_time->clone };
     local *DBIx::Class::TimeStamp::get_timestamp =
-      sub { return $test_time->clone };
+        sub { return $test_time->clone };
 
     my @testcases = (
         # sensor 1 hour t2
@@ -367,7 +367,56 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
         },
         
         # multiple alarms
-        
+        {
+            name => '2: one matching mask 1 firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, 20, undef, undef, undef, 2 ], # should fire
+                [ 2, 'foo/bar/mask',               121, 10, undef, undef, undef, 4 ], # does not fire
+            ],
+            expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 2 },
+        },
+        # {
+        # NO: currently higher severity wins but does not fire --  BUG or FEATURE?
+        #     name => '2: both matching mask lower severity firing',
+        #     alarm_conditions => [
+        #         [ 1, 'erlangen/keller/temperatur', 121, 20, undef, undef, undef, 2 ], # should fire
+        #         [ 2, 'erlangen/keller/temperatur', 121, 10, undef, undef, undef, 4 ], # does not fire
+        #     ],
+        #     expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 2 },
+        # },
+        {
+            name => '2: both matching mask higher severity firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, 20, undef, undef, undef, 4 ], # should fire
+                [ 2, 'erlangen/keller/temperatur', 121, 10, undef, undef, undef, 2 ], # does not fire
+            ],
+            expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 4 },
+        },
+        {
+            name => '2: both matching mask/partial higher severity firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, 20, undef, undef, undef, 4 ], # should fire
+                [ 2, '%/%/temperatur',               1, 10, undef, undef, undef, 2 ], # does not fire
+            ],
+            expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 4 },
+        },
+        # {
+        #     ### NO: severity wins over specificity -- BUG or FEATURE?
+        #     ###     name => '2: both matching mask/partial higher specificity firing',
+        #     ###     alarm_conditions => [
+        #     ###         [ 1, 'erlangen/keller/temperatur', 121, 20, undef, undef, undef, 2 ], # should fire
+        #     ###         [ 2, '%/%/temperatur',               1, 10, undef, undef, undef, 4 ], # does not fire
+        #     ###     ],
+        #     ###     expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 2 },
+        # },
+        {
+            name => '2: both matching mask/partial same severity, higher specificity firing',
+            alarm_conditions => [
+                [ 1, 'erlangen/keller/temperatur', 121, 20, undef, undef, undef, 2 ], # should fire
+                [ 2, '%/%/temperatur',               1, 10, undef, undef, undef, 2 ], # does not fire
+            ],
+            expect => { alarm_condition_id => 1, latest_value_gt_alarm => 1, max_severity_level => 2 },
+        },
     );
 
     my $alarm1;
@@ -392,142 +441,70 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
 
     foreach my $testcase (@testcases) {
         my $name = $testcase->{name};
-        
-        AlarmCondition->delete;
-        
-        foreach my $alarm_condition (@{$testcase->{alarm_conditions}}) {
-            my @fields = qw(alarm_condition_id sensor_mask
-                            max_measure_age_minutes
-                            latest_value_gt latest_value_lt
-                            min_value_gt max_value_lt
-                            severity_level);
-            my @values = @{$alarm_condition};
-            AlarmCondition->create( { zip @fields, @values } );
-        }
-        
+        set_alarm_conditions($testcase->{alarm_conditions});
         is_fields $sensor1->discard_changes->latest_measure,
                   { %sensor1_measure, %{$testcase->{expect}} },
                   "$name: expected values";
     }
+}
+
+# alarm creation and clearing
+{
+    my $test_time = $t2->clone->set( minute => 13, second => 14 );
+
+    no warnings 'redefine';
+    local *DateTime::now = sub { return $test_time->clone };
+    local *DBIx::Class::TimeStamp::get_timestamp =
+        sub { return $test_time->clone };
     
-    done_testing; exit;
-
-
-    # multiple alarms work, severity is max
-    my $alarm2 = AlarmCondition->create(
+    is Alarm->count, 0, 'no alarm defined';
+    
+    ### TODO: add latest measures that do not alarm
+    
+    my $t0_13_14 = $t0->clone->set(minute => 13, second => 14);
+    
+    my @testcases = (
+        ### alarm conditions that do not alarm
         {
-            sensor_mask    => 'foo/bar/mask',    # should never match
-            severity_level => 3,
-        }
+            name => 'first occurence creates alarm',
+            time => $t0_13_14,
+            alarm_conditions => [
+                [ 11, 'erlangen/keller/temperatur', 121, 20, undef, undef, undef, 2 ], # should fire
+                [ 12, '%/%/temperatur',               1, 10, undef, undef, undef, 2 ], # does not fire
+            ],
+            nr_alarms => 1,
+            expect => { alarm_condition_id => 11, sensor_id => 1, 
+                        starting_at => $t0_13_14, last_notified_at => undef, ending_at => undef },
+        },
     );
-    is AlarmCondition->count, 2, 'two alarm conditions defined';
-
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 1,
-        max_severity_level           => 5,
-      },
-      'age alarm is fired for ages out of range, nonsense alarm ignored';
-
-    $alarm2->update( { sensor_mask => '%/%/temperatur', min_value_gt => 0 } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 1,
-        max_severity_level           => 5,
-      },
-      'age alarm is still fired, other alarm not fired';
-
-    $alarm2->update( { min_value_gt => 20 } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 1,
-        ### min_value_gt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'age alarm and min_value_gt alarm is fired';
-
-    $alarm2->update( { severity_level => 9 } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 2,
-        ### measure_age_alarm            => 1,
-        min_value_gt_alarm           => 1,
-        max_severity_level           => 9,
-      },
-      'reported severity level is maximum';
-
-    # multiple alarms let the most-specific fire
-    $alarm2->update( { severity_level => 5 } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 1,
-        min_value_gt_alarm           => 0,
-        max_severity_level           => 5,
-      },
-      'same severity level reports one';
-
-    $alarm1->update( { max_measure_age_minutes => undef } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 0,
-        min_value_gt_alarm           => 0,
-        max_severity_level           => undef,
-      },
-      'most specific alarm keeps quiet if not firing';
-
-
-    ### multiple alarms let the most-specific of highest severity level fire
-    my $alarm3 = AlarmCondition->create(
-          {
-              sensor_mask    => '%/%/temperatur',
-              min_value_gt   => 30,
-              severity_level => 2,
-          }
-      );
-
-    ### currently broken...
-    ### is_fields $sensor1->discard_changes->latest_measure,
-    ###   {
-    ###     %sensor1_measure,
-    ###     alarm_condition_id           => 1,
-    ###     measure_age_alarm            => 0,
-    ###     min_value_gt_alarm           => 1,
-    ###     max_severity_level           => 2,
-    ###   },
-    ###   'lower severity level reports if higher keeps silent';
-
-    $alarm1->update( { min_value_gt => 30 } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 0,
-        min_value_gt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'higher severity alarm overrides lower severity one if fired';
-
-    $alarm3->update( { sensor_mask => 'erlangen/keller/temperatur' } );
-    is_fields $sensor1->discard_changes->latest_measure,
-      {
-        %sensor1_measure,
-        alarm_condition_id           => 1,
-        measure_age_alarm            => 0,
-        min_value_gt_alarm           => 1,
-        max_severity_level           => 5,
-      },
-      'higher severity alarm overrides more specific lower severity one if fired';
+    
+    foreach my $testcase (@testcases) {
+        my $name = $testcase->{name};
+        set_alarm_conditions($testcase->{alarm_conditions});
+        
+        $test_time = $testcase->{time};
+        Alarm->check_and_update;
+        
+        is Alarm->count, $testcase->{nr_alarms},
+           "$name: nr alarms is $testcase->{nr_alarms}";
+    }
 }
 
 done_testing;
+
+sub set_alarm_conditions {
+    my $alarm_conditions = shift;
+    
+    AlarmCondition->delete;
+
+    foreach my $alarm_condition (@$alarm_conditions) {
+        my @fields = qw(alarm_condition_id sensor_mask
+                        max_measure_age_minutes
+                        latest_value_gt latest_value_lt
+                        min_value_gt max_value_lt
+                        severity_level);
+        my @values = @{$alarm_condition};
+        AlarmCondition->create( { zip @fields, @values } );
+    }
+    
+}

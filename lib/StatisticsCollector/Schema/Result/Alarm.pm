@@ -1,6 +1,6 @@
 package StatisticsCollector::Schema::Result::Alarm;
 use feature ':5.10';
-use DBIx::Class::Candy -components => [ qw(DynamicDefault) ];
+use DBIx::Class::Candy -components => [ qw(InflateColumn::DateTime TimeStamp) ];
 
 =head1 NAME
 
