@@ -21,7 +21,7 @@ sanity of the latest measure read.
 
 =head1 TABLE
 
-virtual_latest_measure
+virtual_latest_measure (virtual table)
 
 Extends L<Measure|StatisticsCollector::Schema::Result::Measure>
 

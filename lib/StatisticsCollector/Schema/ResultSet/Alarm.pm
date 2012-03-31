@@ -30,8 +30,8 @@ sub check_and_update {
     my $self = shift;
     
     # get current and saved alarms
-    my @alarming_sensors = $self->_get_alarming_sensors;
-    my @open_alarms = $self->_get_open_alarms;
+    my @alarming_sensors      = $self->_get_alarming_sensors;
+    my @open_alarms           = $self->_get_open_alarms;
     
     my @alarming_sensor_ids   = map { $_->sensor_id } @alarming_sensors;
     my @open_alarm_sensor_ids = map { $_->sensor_id } @open_alarms;
@@ -40,7 +40,7 @@ sub check_and_update {
     my %alarming_but_not_open = map { ($_->sensor_id => $_) } @alarming_sensors;
     delete $alarming_but_not_open{$_} for @open_alarm_sensor_ids;
 
-    my %to_close = map { ($_->sensor_id => $_) } @open_alarm_sensor_ids;
+    my %to_close = map { ($_->sensor_id => $_) } @open_alarms;
     delete $to_close{$_} for @alarming_sensor_ids;
 
     # update DB
@@ -48,12 +48,13 @@ sub check_and_update {
          ->search( { alarm_id => { -in => [ keys %to_close ] } } )
          ->update( { ending_at => DateTime->now } );
     
-    $self #->result_source->resultset
-         ->create({
+    $self->create({
              alarm_condition_id => $_->get_column('alarm_condition_id'),
              sensor_id          => $_->sensor_id,
          })
         for values %alarming_but_not_open;
+    
+    return $self;
 }
 
 sub _get_alarming_sensors {

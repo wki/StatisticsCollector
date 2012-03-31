@@ -21,7 +21,7 @@ into a given interval and returns the requested number of records.
 
 =head1 TABLE
 
-virtual_aggregate_measure
+virtual_aggregate_measure (virtual table)
 
 =cut
 

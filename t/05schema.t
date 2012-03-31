@@ -6,6 +6,8 @@ use Test::More;
 use Test::Exception;
 use Test::DBIx::Class;
 
+sub are_fields;
+
 # ensure DB is empty
 is Sensor->count, 0, 'no records in sensor table';
 
@@ -175,7 +177,7 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     }
 }
 
-# add some alarms and see if latest measure reports them
+# add some alarm conditions and see if latest measure reports them
 {
 
 # 1: erlangen/keller/temperatur 2 measures, 1 and 2 hours age, latest: value = 13 .. 13
@@ -457,40 +459,97 @@ my $ta        = $now->clone->truncate( to => 'hour' )->add( hours => 1 );
     local *DBIx::Class::TimeStamp::get_timestamp =
         sub { return $test_time->clone };
     
-    is Alarm->count, 0, 'no alarm defined';
+    Alarm->delete;
+    Measure->delete;
     
-    ### TODO: add latest measures that do not alarm
+    set_alarm_conditions([
+        # id  mask                          age  lat-gt lat-lt min-gt max-lt severity
+        [ 11, '%/%/temperatur',             120, undef, undef, undef, undef, 2 ], # max age 2 hours
+        [ 12, 'erlangen/keller/temperatur', 120, 10,    50,    undef, undef, 2 ], # latest value 11-49
+    ]);
     
     my $t0_13_14 = $t0->clone->set(minute => 13, second => 14);
+    my $t0_13_16 = $t0->clone->set(minute => 13, second => 16);
+    my $t0_13_18 = $t0->clone->set(minute => 13, second => 18);
+    my $t0_13_20 = $t0->clone->set(minute => 13, second => 20);
     
     my @testcases = (
-        ### alarm conditions that do not alarm
         {
-            name => 'first occurence creates alarm',
-            time => $t0_13_14,
-            alarm_conditions => [
-                [ 11, 'erlangen/keller/temperatur', 121, 20, undef, undef, undef, 2 ], # should fire
-                [ 12, '%/%/temperatur',               1, 10, undef, undef, undef, 2 ], # does not fire
-            ],
+            name      => 'Sensor1/30 no alarm',
+            time      => $t0_13_14,
+            sensor    => $sensor1,
+            measure   => 30,
+            nr_alarms => 0,
+        },
+        {
+            name      => 'Sensor2/60 create alarm',
+            time      => $t0_13_16,
+            sensor    => $sensor1,
+            measure   => 60,
             nr_alarms => 1,
-            expect => { alarm_condition_id => 11, sensor_id => 1, 
-                        starting_at => $t0_13_14, last_notified_at => undef, ending_at => undef },
+            expect => [
+                { alarm_condition_id => 12, sensor_id => 1, 
+                  starting_at => $t0_13_16, last_notified_at => undef, ending_at => undef },
+            ],
+        },
+        {
+            name      => 'Sensor2/50 keep alarm',
+            time      => $t0_13_18,
+            sensor    => $sensor1,
+            measure   => 50,
+            nr_alarms => 1,
+            expect => [
+                { alarm_condition_id => 12, sensor_id => 1, 
+                  starting_at => $t0_13_16, last_notified_at => undef, ending_at => undef },
+            ],
+        },
+        {
+            name      => 'Sensor2/49 clear alarm',
+            time      => $t0_13_20,
+            sensor    => $sensor1,
+            measure   => 49,
+            nr_alarms => 1,
+            expect => [
+                { alarm_condition_id => 12, sensor_id => 1, 
+                  starting_at => $t0_13_16, last_notified_at => undef, ending_at => $t0_13_20 },
+            ],
         },
     );
     
     foreach my $testcase (@testcases) {
         my $name = $testcase->{name};
-        set_alarm_conditions($testcase->{alarm_conditions});
         
         $test_time = $testcase->{time};
+        $testcase->{sensor}->add_measure($testcase->{measure});
         Alarm->check_and_update;
         
         is Alarm->count, $testcase->{nr_alarms},
            "$name: nr alarms is $testcase->{nr_alarms}";
+        
+        if (exists $testcase->{expect}) {
+            are_fields Alarm,
+                       $testcase->{expect},
+                       "$name: record OK";
+        }
     }
 }
 
 done_testing;
+
+sub are_fields {
+    my ($rs, $expected_records, $name) = @_;
+    
+    my @field_names = keys %{$expected_records->[0]};
+    my $ordered_rs = $rs->search_rs(undef, {order_by => 'alarm_id'});
+    
+    my $i = 0;
+    while (my $record = $ordered_rs->next) {
+        is_fields \@field_names,
+                  $record, $expected_records->[$i],
+                  "$name ($i)";
+        $i++;
+    }
+}
 
 sub set_alarm_conditions {
     my $alarm_conditions = shift;

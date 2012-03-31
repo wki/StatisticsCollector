@@ -1,5 +1,11 @@
 #!/usr/bin/env perl
-use Modern::Perl;
+#
+# IMPORTANT!
+# this script schould only use modules shipped with perl.
+# This makes it simple to install by simply copying.
+#
+use strict;
+use warnings;
 use IO::Socket::INET;
 use Getopt::Std;
 
@@ -32,3 +38,4 @@ send_measure [options] name/of/sensor [value]
 EOF
     exit;
 }
+

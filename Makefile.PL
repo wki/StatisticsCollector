@@ -29,6 +29,10 @@ requires 'HTML::FormFu';
 requires 'Catalyst::Controller::HTML::FormFu';
 requires 'HTML::FormFu::Model::DBIC';
 
+# scripts need
+requires 'MooseX::Getopt';
+requires 'MooseX::Types';
+
 # graph generation
 requires 'Imager';
 requires 'Imager::Graph';
