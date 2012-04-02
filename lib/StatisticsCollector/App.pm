@@ -49,7 +49,7 @@ sub _say_if {
     my $condition = shift;
 
     say @_ if $condition;
-    
+
     return $condition;
 }
 
