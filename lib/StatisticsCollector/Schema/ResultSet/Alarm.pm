@@ -1,4 +1,5 @@
 package StatisticsCollector::Schema::ResultSet::Alarm;
+
 use Modern::Perl;
 use base 'DBIx::Class::ResultSet';
 use DateTime;
@@ -94,6 +95,46 @@ sub _get_open_alarms {
                     join => 'sensor',
                 })
              ->all;
+}
+
+=head2 need_notification
+
+Search for alarms that need notification. Alarms need a notification if
+
+=over
+
+=item
+
+just activated and not yet notified ==> urgent
+
+=item
+
+just cancelled and not yet notified ==> urgent
+
+=item
+
+still active                        ==> not urgent
+
+=back
+
+Urgent messages must get notified immediately,
+not urgend messages are notified every hour or in company with urgent
+
+=cut
+
+sub need_notification {
+    my $self = shift;
+    
+    return $self->search(
+        {
+            -or => [
+               'me.ending_at'        => undef,
+               'me.last_notified_at' => undef,
+               'me.last_notified_at' => { '<' => \'coalesce(me.ending_at, me.starting_at)' },
+            ]
+        },
+        {
+        });
 }
 
 =head1 AUTHOR

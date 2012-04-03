@@ -9,6 +9,16 @@ BEGIN { extends 'Catalyst::Controller::Combine' }
 # uncomment if desired and do not import namespace::autoclean!
 use CSS::Minifier::XS ();
 
+=head1 NAME
+
+StatisticsCollector::Controller::Css - Combine View for StatisticsCollector
+
+=head1 DESCRIPTION
+
+Combine View for StatisticsCollector. 
+
+=cut
+
 __PACKAGE__->config(
     #   optional, defaults to static/<<action_namespace>>
     # dir => 'static/css',
@@ -112,14 +122,6 @@ sub minify :Private {
 #     return $text;
 # }
 
-=head1 NAME
-
-StatisticsCollector::Controller::Css - Combine View for StatisticsCollector
-
-=head1 DESCRIPTION
-
-Combine View for StatisticsCollector. 
-
 =head1 SEE ALSO
 
 L<StatisticsCollector>
@@ -134,5 +136,7 @@ This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
+
+__PACKAGE__->meta->make_immutable;
 
 1;

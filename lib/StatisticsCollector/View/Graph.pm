@@ -29,15 +29,13 @@ called by Catalyst as soon as this view is invoked
 sub process {
     my ( $self, $c ) = @_;
 
-    my $font = Imager::Font->new( file => '/Library/Fonts/Arial.ttf' )
-      || die "Error: $!";
+    my $font = Imager::Font->new(file => '/Library/Fonts/Arial.ttf')
+        or die "Error: $!";
 
     my $graph = Imager::Graph::StackedColumn->new();
 
     my $y_max = $c->stash->{y_max} // 20;
     my $y_min = $c->stash->{y_min} // 0;
-
-    # $c->log->debug("BEFORE min=$y_min, max=$y_max");
 
     my $delta = 1;
     my $ticks = 9999;

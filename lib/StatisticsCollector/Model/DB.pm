@@ -3,6 +3,16 @@ use strict;
 use warnings;
 use base 'Catalyst::Model::DBIC::Schema';
 
+=head1 NAME
+
+StatisticsCollector::Model::DB - Catalyst Model
+
+=head1 DESCRIPTION
+
+Catalyst Model.
+
+=cut
+
 __PACKAGE__->config(
     # schema_class => 'StatisticsCollector::Schema',
     # 
@@ -13,15 +23,6 @@ __PACKAGE__->config(
     #     pg_enable_utf8 => 1,
     # },
 );
-
-
-=head1 NAME
-
-StatisticsCollector::Model::DB - Catalyst Model
-
-=head1 DESCRIPTION
-
-Catalyst Model.
 
 =head1 AUTHOR
 

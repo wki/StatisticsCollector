@@ -261,36 +261,3 @@ it under the same terms as Perl itself.
 =cut
 
 1;
-
-__END__
-
-order of alarm conditions
--------------------------
-
-most important (most specific)
-  8: erlangen/keller/temperatur
-
-medium specific
-  7: %/keller/temperatur
-  6: erlangen/%/temperatur
-  5: erlangen/keller/%
-
-low specific
-  4: %/%/temperatur
-  3: %/keller/%
-  2: erlangen/%/%
-
-unspecific
-  1: %/%/%
-
-not defined
-  0: ?
-
-
-testing
--------
-
-- search all alarm conditions with matching masks
-- sort by severity (desc) and then by specificity (desc)
-- for every severity only keep the first (highest specificity value)
-- the highest severity giving an alarm wins

@@ -110,7 +110,6 @@ belongs_to alarm_condition => 'StatisticsCollector::Schema::Result::AlarmConditi
 
 belongs_to sensor => 'StatisticsCollector::Schema::Result::Sensor', 'sensor_id';
 
-
 =head1 METHODS
 
 =cut

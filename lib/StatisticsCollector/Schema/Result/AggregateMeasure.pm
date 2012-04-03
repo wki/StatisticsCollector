@@ -1,4 +1,5 @@
 package StatisticsCollector::Schema::Result::AggregateMeasure;
+
 use DBIx::Class::Candy 
     -components => [qw(InflateColumn::DateTime)];
 
