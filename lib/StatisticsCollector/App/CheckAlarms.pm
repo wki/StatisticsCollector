@@ -31,13 +31,14 @@ called from L<StatisticsCollector::App> in order to run the script
 sub run {
     my $self = shift;
 
-    my $alarms_to_notify =
+    my $alarms_to_notify_rs =
         $self->resultset('Alarm')
              ->check_and_update
              ->need_notification;
 
-    while (my $alarm = $alarms_to_notify->next) {
+    while (my $alarm = $alarms_to_notify_rs->next) {
         ### TODO: process.
+        # fill two lists: urgent and regular
     }
 }
 

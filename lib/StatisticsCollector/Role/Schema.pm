@@ -10,7 +10,11 @@ StatisticsCollector::Role::Schema - reusable part for DB connections
 
 =head1 SYNOPSIS
 
+    package StatisticsCollector::App::Foo;
+    extends 'StatisticsCollector::App';
     with 'StatisticsCollector::Role::Schema';
+    
+    ...
 
 =head1 DESCRIPTION
 
@@ -91,7 +95,7 @@ sub _connect_to_db {
 
 =cut
 
-=head2 resultset($resultset_name)
+=head2 resultset ( $resultset_name )
 
 gives back a named result set
 
