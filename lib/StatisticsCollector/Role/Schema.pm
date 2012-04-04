@@ -103,6 +103,10 @@ sub resultset {
     return $self->schema->resultset($resultset_name);
 }
 
+no Moose::Role;
+
+1;
+
 =head1 SEE ALSO
 
 L<StatisticsCollector>
@@ -117,7 +121,3 @@ This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-no Moose::Role;
-
-1;

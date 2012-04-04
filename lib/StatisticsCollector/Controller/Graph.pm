@@ -229,6 +229,10 @@ sub _values_of {
     grep defined, map { @{$_->[0]} } @_
 }
 
+__PACKAGE__->meta->make_immutable;
+
+1;
+
 =head1 AUTHOR
 
 Wolfgang Kinkeldei
@@ -239,7 +243,3 @@ This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-__PACKAGE__->meta->make_immutable;
-
-1;

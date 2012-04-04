@@ -61,6 +61,7 @@ __PACKAGE__->config(
 # Start the application
 __PACKAGE__->setup();
 
+1;
 
 =head1 NAME
 
@@ -72,7 +73,8 @@ StatisticsCollector - Catalyst based application
 
 =head1 DESCRIPTION
 
-[enter your description here]
+StatisticsCollector is a Catalyst Application that is like a marriage
+of Nagios with collectd. Best of both worlds :-)
 
 =head1 SEE ALSO
 
@@ -88,5 +90,3 @@ This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-1;

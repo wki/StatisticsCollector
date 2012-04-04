@@ -61,6 +61,10 @@ sub save :Local :Args(0) :FormConfig('admin/alarm_condition') {
     $c->stash->{template} = 'admin/alarm_condition/index.pl';
 }
 
+__PACKAGE__->meta->make_immutable;
+
+1;
+
 =head1 AUTHOR
 
 Wolfgang Kinkeldei
@@ -71,7 +75,3 @@ This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-__PACKAGE__->meta->make_immutable;
-
-1;

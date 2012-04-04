@@ -110,6 +110,8 @@ belongs_to alarm_condition => 'StatisticsCollector::Schema::Result::AlarmConditi
 
 belongs_to sensor => 'StatisticsCollector::Schema::Result::Sensor', 'sensor_id';
 
+1;
+
 =head1 METHODS
 
 =cut
@@ -124,5 +126,3 @@ This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-1;

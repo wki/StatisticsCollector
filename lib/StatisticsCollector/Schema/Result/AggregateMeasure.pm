@@ -139,6 +139,8 @@ group by s.sensor_id, range.starting_at, range.ending_at
 order by range.starting_at
 });
 
+1;
+
 =head1 AUTHOR
 
 Wolfgang Kinkeldei
@@ -149,5 +151,3 @@ This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-1;

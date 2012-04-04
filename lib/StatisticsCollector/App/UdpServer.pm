@@ -79,6 +79,10 @@ sub run {
     }
 }
 
+__PACKAGE__->meta->make_immutable;
+
+1;
+
 =head1 SEE ALSO
 
 L<StatisticsCollector>
@@ -93,7 +97,3 @@ This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-__PACKAGE__->meta->make_immutable;
-
-1;

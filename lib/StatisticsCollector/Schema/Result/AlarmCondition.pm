@@ -249,6 +249,8 @@ sub calculate_specificity_from_mask {
     return $specificity;
 }
 
+1;
+
 =head1 AUTHOR
 
 Wolfgang Kinkeldei
@@ -259,5 +261,3 @@ This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-1;

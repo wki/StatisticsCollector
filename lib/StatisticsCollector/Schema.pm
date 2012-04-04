@@ -21,6 +21,8 @@ handles DB connection
 
 __PACKAGE__->load_namespaces();
 
+1;
+
 =head1 SEE ALSO
 
 L<StatisticsCollector>
@@ -35,5 +37,3 @@ This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-
-1;
