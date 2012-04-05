@@ -22,6 +22,25 @@ StatisticsCollector::App::CheckAlarms - Check if sensor alarms are changing
 
 This is the class behind a shell-executable script to check alarms
 
+=head1 ATTRIBUTES
+
+=cut
+
+=head2 mailto
+
+specify a mail address to use instead the saved one. Does not set
+the notified flag for alarms if set.
+
+=cut
+
+has mailto => (
+    traits => ['Getopt'],
+    is => 'ro',
+    isa => 'Str',
+    predicate => 'send_testmail',
+    documentation => 'specify a mail address for testing',
+);
+
 =head1 METHODS
 
 =cut
@@ -44,6 +63,7 @@ sub run {
     while (my $alarm = $alarms_to_notify->next) {
         my $status = $alarm->get_column('status');
         my $mailto = $alarm->alarm_condition->notify_email // $DEFAULT_EMAIL;
+        $mailto = $self->mailto if $self->send_testmail;
 
         $self->log_debug($status,
                          $alarm->ending_at // $alarm->starting_at,
@@ -53,18 +73,20 @@ sub run {
 
         push @{$alarms_for_person{$mailto}->{$status}}, $alarm;
     }
-    
+
     $self->notify_alarms_for_person_if_needed($_, $alarms_for_person{$_})
         for keys %alarms_for_person;
 }
 
 sub notify_alarms_for_person_if_needed {
     my ($self, $person_email, $alarms) = @_;
-    
+
     if ($self->must_notify($alarms)) {
         $self->log_dryrun("would notify '$person_email'") and return;
         $self->notify_alarms_for_person($person_email, $alarms);
-        $self->save_alarm_notification($alarms);
+
+        $self->save_alarm_notification($alarms)
+            if !$self->send_testmail;
     } else {
         $self->log("no need to notify '$person_email'");
     }
@@ -72,10 +94,10 @@ sub notify_alarms_for_person_if_needed {
 
 sub must_notify {
     my ($self, $alarms) = @_;
-    
+
     return 1 if exists $alarms->{new} || exists $alarms->{closed};
     return   if !exists $alarms->{open}; # should never happen
-    return grep { 
+    return grep {
                 my $age = $_->get_column('notify_age');
 
                 !$age || $age > $RE_NOTIFY_AGE
@@ -86,19 +108,19 @@ sub must_notify {
 sub _shorten {
     my $text = shift;
     my $length = shift // 20;
-    
+
     substr($text,$length) = '...' if length $text > $length;
-    
+
     return $text;
 }
 
 sub notify_alarms_for_person {
     my ($self, $person_email, $alarms) = @_;
-    
+
     my @mail_lines;
     foreach my $state (qw(closed new open)) {
         next if !exists $alarms->{$state};
-        
+
         my $s = scalar @{$alarms->{$state}} > 1 ? 's' : '';
         push @mail_lines,
              "$state Alarm$s:",
@@ -107,7 +129,7 @@ sub notify_alarms_for_person {
                     my $at        = $_->ending_at // $_->starting_at;
                     my $sensor    = _shorten($_->sensor->name, 25);
                     my $condition = _shorten($_->alarm_condition->name, 16);
-                 
+
                     sprintf('  %-30s %s %s - %s',
                             $sensor,
                             $at->ymd, $at->hms,
@@ -116,7 +138,7 @@ sub notify_alarms_for_person {
              ),
              '';
     }
-    
+
     my $mail_text = <<MAIL;
 Hello Statistics-Collector,
 
@@ -136,12 +158,12 @@ MAIL
 
 sub save_alarm_notification {
     my ($self, $alarms) = @_;
-    
+
     my @alarm_ids =
         map { $_->alarm_id }
         map { @$_ }
         values %{$alarms};
-    
+
     $self->resultset('Alarm')
          ->search( { alarm_id => { -in => \@alarm_ids } } )
          ->update( { last_notified_at => DateTime->now( time_zone => 'local' ) } );
