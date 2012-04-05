@@ -1,6 +1,6 @@
 package StatisticsCollector::App;
+use Modern::Perl;
 use Moose;
-use feature ':5.10';
 with 'MooseX::Getopt';
 
 =head1 NAME
@@ -12,6 +12,19 @@ StatisticsCollector::App - Base class for applications
     package StatisticsCollector::App::Foo;
     use Moose;
     extends 'StatisticsCollector::App';
+    
+    sub whatever {
+        my $self = shift;
+        
+        $self->log('some message printed if verbose');
+        
+        $self->log_debug('seen in debug mode');
+        
+        $self->log_dryrun('would delete files') and return;
+        $files->delete;
+        
+        ...
+    }
 
 =head1 DESCRIPTION
 
@@ -69,7 +82,7 @@ has dryrun => (
 
 =cut
 
-=head2 verbose_msg(@messages)
+=head2 log ( @messages )
 
 if verbose mode is on, @message is printed to STDOUT
 
@@ -77,12 +90,12 @@ returns true of verbose mode is on
 
 =cut
 
-sub verbose_msg {
+sub log {
     my $self = shift;
-    $self->_say_if($self->verbose || $self->debug, @_);
+    $self->_log_if($self->verbose || $self->debug, @_);
 }
 
-=head2 debug_msg(@messages)
+=head2 log_debug ( @messages )
 
 if debug mode is on, @message is printed to STDOUT
 
@@ -90,12 +103,12 @@ returns true of debug mode is on
 
 =cut
 
-sub debug_msg {
+sub log_debug {
     my $self = shift;
-    $self->_say_if($self->debug, 'DEBUG:', @_);
+    $self->_log_if($self->debug, 'DEBUG:', @_);
 }
 
-=head2 dryrun_msg(@messages)
+=head2 log_dryrun ( @messages )
 
 if dryrun mode is on, @message is printed to STDOUT
 
@@ -103,16 +116,16 @@ returns true of dryrun mode is on
 
 =cut
 
-sub dryrun_msg {
+sub log_dryrun {
     my $self = shift;
-    $self->_say_if($self->dryrun, @_);
+    $self->_log_if($self->dryrun, @_);
 }
 
-sub _say_if {
+sub _log_if {
     my $self = shift;
     my $condition = shift;
 
-    say @_ if $condition;
+    say join(' ', @_) if $condition;
 
     return $condition;
 }

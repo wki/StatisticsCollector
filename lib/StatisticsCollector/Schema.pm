@@ -1,4 +1,5 @@
 package StatisticsCollector::Schema;
+
 use base 'DBIx::Class::Schema';
 
 our $VERSION = 3;
@@ -19,7 +20,9 @@ handles DB connection
 
 =cut
 
-__PACKAGE__->load_namespaces();
+__PACKAGE__->load_namespaces(
+    default_resultset_class => 'ResultSet',
+);
 
 1;
 

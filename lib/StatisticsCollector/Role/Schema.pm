@@ -14,7 +14,15 @@ StatisticsCollector::Role::Schema - reusable part for DB connections
     extends 'StatisticsCollector::App';
     with 'StatisticsCollector::Role::Schema';
     
-    ...
+    sub whatever {
+        my $self = shift;
+        
+        # access a resultset via schema
+        $self->schema->resultset('SomeTable')->...
+        
+        # a shortcut
+        $self->resultset('AnotherTable')->...
+    }
 
 =head1 DESCRIPTION
 

@@ -1,11 +1,13 @@
 package StatisticsCollector::App::UdpServer;
+use Modern::Perl;
 use Moose;
 use IO::Socket::INET;
 use Try::Tiny;
-use feature ':5.10';
 
 extends 'StatisticsCollector::App';
 with 'StatisticsCollector::Role::Schema';
+
+our $DEFAULT_PORT = 8080;
 
 =head1 NAME
 
@@ -30,13 +32,13 @@ the port to listen to (default: 8080)
 =cut
 
 has port => (
-    traits => ['Getopt'],
-    is => 'ro',
-    isa => 'Int',
-    default => 8080,
-    lazy => 1,
-    cmd_aliases => ['p'],
-    documentation => 'Port to bind [8080]',
+    traits        => ['Getopt'],
+    is            => 'ro',
+    isa           => 'Int',
+    default       => $DEFAULT_PORT,
+    lazy          => 1,
+    cmd_aliases   => ['p'],
+    documentation => "Port to bind [$DEFAULT_PORT]",
 );
 
 =head1 METHODS
@@ -56,12 +58,12 @@ sub run {
         Proto     => 'udp',
         LocalPort => $self->port,
         Timeout   => 10)
-    or die "Can't make UDP server: $@";
+    or die "Can't create UDP server: $@";
     
-    $self->verbose_msg('UDP Server ready.');
-    my ($datagram,$flags);
+    $self->log('UDP Server ready.');
+    my ($datagram, $flags);
     while ($response->recv($datagram, 500, $flags)) {
-        $self->verbose_msg("Got message from ${\$response->peerhost}: $datagram");
+        $self->log("Got message from ${\$response->peerhost}: $datagram");
         
         my ($sensor_name, $value) = split(/\s+/, $datagram);
         if ($sensor_name !~ m{\A [^/]+ / [^/]+ / [^/]+ \z}xms) {
@@ -70,9 +72,9 @@ sub run {
         }
         
         try {
-            $self->schema->resultset('Sensor')
-                         ->find_or_create( { name => $sensor_name } )
-                         ->add_measure( $value // 0 );
+            $self->resultset('Sensor')
+                 ->find_or_create( { name => $sensor_name } )
+                 ->add_measure( $value // 0 );
         } catch {
             warn "Error adding a measure, sensor '$sensor_name' ($_)";
         };

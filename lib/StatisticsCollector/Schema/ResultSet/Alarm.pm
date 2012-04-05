@@ -1,8 +1,8 @@
 package StatisticsCollector::Schema::ResultSet::Alarm;
 
 use Modern::Perl;
-use base 'DBIx::Class::ResultSet';
 use DateTime;
+use base 'StatisticsCollector::Schema::ResultSet';
 
 =head1 NAME
 
@@ -131,9 +131,26 @@ sub need_notification {
                'me.ending_at'        => undef,
                'me.last_notified_at' => undef,
                'me.last_notified_at' => { '<' => \'coalesce(me.ending_at, me.starting_at)' },
-            ]
+            ],
+            -bool => 'sensor.active',
         },
         {
+            prefetch => [
+                'alarm_condition', 'sensor',
+            ],
+            '+select' => [
+                \q{case when ending_at is null and last_notified_at is null
+                             then 'new'
+                        when ending_at is null and last_notified_at is not null
+                             then 'open'
+                             else 'closed'
+                   end as status},
+                \q{extract('epoch' from age(now(), coalesce(ending_at, starting_at)))::integer},
+                \q{extract('epoch' from age(now(), last_notified_at))::integer},
+            ],
+            '+as' => [
+                qw(status change_age notify_age)
+            ],
         });
 }
 
