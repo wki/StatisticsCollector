@@ -2,6 +2,7 @@ package StatisticsCollector::App::CheckAlarms;
 use Modern::Perl;
 use Moose;
 use Try::Tiny;
+use DateTime;
 
 extends 'StatisticsCollector::App';
 with 'StatisticsCollector::Role::Schema';
@@ -63,6 +64,7 @@ sub notify_alarms_for_person_if_needed {
     if ($self->must_notify($alarms)) {
         $self->log_dryrun("would notify '$person_email'") and return;
         $self->notify_alarms_for_person($person_email, $alarms);
+        $self->save_alarm_notification($alarms);
     } else {
         $self->log("no need to notify '$person_email'");
     }
@@ -75,7 +77,7 @@ sub must_notify {
     return   if !exists $alarms->{open}; # should never happen
     return grep { 
                 my $age = $_->get_column('notify_age');
-                
+
                 !$age || $age > $RE_NOTIFY_AGE
            }
            @{$alarms->{open}};
@@ -130,6 +132,19 @@ MAIL
 
     say "mailto: $person_email";
     say $mail_text;
+}
+
+sub save_alarm_notification {
+    my ($self, $alarms) = @_;
+    
+    my @alarm_ids =
+        map { $_->alarm_id }
+        map { @$_ }
+        values %{$alarms};
+    
+    $self->resultset('Alarm')
+         ->search( { alarm_id => { -in => \@alarm_ids } } )
+         ->update( { last_notified_at => DateTime->now( time_zone => 'local' ) } );
 }
 
 __PACKAGE__->meta->make_immutable;
