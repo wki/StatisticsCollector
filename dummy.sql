@@ -9,10 +9,28 @@ from sensor s
 where s.sensor_id in (1,2,3,4,5)
 ;
 
+/* better join plan
 
-/* try to use a window function
-   the window function per se does not shrink the nr of rows
-   but allows this in an outer query
+    all of
+    (
+        columns: m.*, 
+                 s.*, 
+                 tested alarm conditions, 
+                 firing
+        latest (measure_id, sensor_id)       s
+        --> measure                          s
+        --> (sensors and matching ac)        s * severity
+    )
+    windowed on s.id
+             ordered by: firing desc, severity desc
+*/
+
+
+
+
+
+/* 
+   sensors and all matching alarm conditions, the best specific for every severity
 */
 select x.*
 from (select s.sensor_id, s.name,
@@ -98,7 +116,7 @@ from (select sensor_id, max(measure_id) as latest_measure_id
                                ) ac on ac.sensor_id = s.sensor_id
                 group by m.measure_id
                ) m on (sm.latest_measure_id = m.measure_id)
-where sm.sensor_id in (26,27)
+where sm.sensor_id in (1,2,3,4,5)
 ;
 
 
