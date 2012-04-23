@@ -7,3 +7,6 @@ script/dbicdh/
 .DS_Store
 root/_*/
 dump/*.sql
+.carton/
+pm_to_blib
+local/
