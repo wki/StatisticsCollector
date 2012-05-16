@@ -1,0 +1,35 @@
+#
+# main config file. additionally, we need a site-dependend suffix-config file.
+#
+{
+    name => 'StatisticsCollector',
+
+    # Disable deprecated behavior needed by old applications
+    disable_component_resolution_regex_fallback => 1,
+
+    default_view => 'ByCode',
+
+    'Model::DB' => {
+        schema_class => 'StatisticsCollector::Schema',
+
+        ### connect info must be defined in local config files
+        ### in order to avoid false DB connections
+        # connect_info => {
+        #     dsn => 'dbi:Pg:dbname=statistics',
+        #     user => 'postgres',
+        #     password => '',
+        #     pg_enable_utf8 => 1,
+        # },
+    },
+
+    'Controller::HTML::FormFu' => {
+        model_stash => {
+            schema => 'StatisticsCollector::Schema',
+        },
+        constructor => {
+            args => {
+                # plugins => ['FixFields'],
+            },
+        },
+    },
+}

@@ -2,63 +2,17 @@ package StatisticsCollector;
 use Moose;
 use namespace::autoclean;
 
-use Catalyst::Runtime 5.80;
-
-# Set flags and add plugins for the application.
-#
-# Note that ORDERING IS IMPORTANT here as plugins are initialized in order,
-# therefore you almost certainly want to keep ConfigLoader at the head of the
-# list if you're using it.
-#
-#         -Debug: activates the debug mode for very useful log messages
-#   ConfigLoader: will load the configuration from a Config::General file in the
-#                 application's home directory
-# Static::Simple: will serve static files from the application's root
-#                 directory
+use Catalyst::Runtime 5.90;
 
 use Catalyst qw/
     Static::Simple
+    ConfigLoader
 /;
 
 extends 'Catalyst';
 
 our $VERSION = '0.03';
 
-# Configure the application.
-#
-# Note that settings in statisticscollector.conf (or other external
-# configuration file that you set up manually) take precedence
-# over this when using ConfigLoader. Thus configuration
-# details given here can function as a default configuration,
-# with an external configuration file acting as an override for
-# local deployment.
-
-__PACKAGE__->config(
-    name => 'StatisticsCollector',
-    # Disable deprecated behavior needed by old applications
-    disable_component_resolution_regex_fallback => 1,
-
-    default_view => 'ByCode',
-
-    'Model::DB' => {
-        schema_class => 'StatisticsCollector::Schema',
-
-        connect_info => {
-            dsn => $ENV{DSN} // 'dbi:Pg:dbname=statistics',
-            user => 'postgres',
-            password => '',
-            pg_enable_utf8 => 1,
-        },
-    },
-    
-    'Controller::HTML::FormFu' => {
-        model_stash => {
-            schema => 'StatisticsCollector::Schema',
-        },
-    },
-);
-
-# Start the application
 __PACKAGE__->setup();
 
 1;
