@@ -24,7 +24,7 @@ easy test /css/site.css > root/_static/css/site.css
 easy test /js/site.js   > root/_static/js/site.js
 
 # transfer files to server
-ssh box 'mkdir StatisticsCollector'
+ssh box 'mkdir -p StatisticsCollector/local'
 
 rsync -vcr  --delete \
   --exclude perl5lib --exclude local \
@@ -34,8 +34,12 @@ rsync -vcr  --delete \
   --exclude script/dbicdh \
   --exclude dump \
   --exclude Changes --exclude 'README.*' --exclude 'INFO.*' \
-  . box:StatisticsCollector/ $*
+  . box:StatisticsCollector/ -n $*
 
-# rsync
+# update perl modules
+### perlbrew list | grep 5.14.2 || perlbrew install perl-5.14.2
+### [ -f /path/to/cpanm ] || perlbrew install-cpanm
+~/perl5/perlbrew/perls/perl-5.14.2/bin/perl ~/perl5/perlbrew/bin/cpanm -Llocal Carton
+PERL5LIB=~/StatisticsCollector/local/lib/perl5 local/bin/carton install
 
 # restart server
