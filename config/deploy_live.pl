@@ -51,7 +51,7 @@
             : ()),
     },
     
-    # setup a mirror for the box
+    # TODO: setup a mirror for the box
     cpan_mirror => {
         root => "$ENV{HOME}/minicpan",
         port => 8080,
