@@ -108,7 +108,7 @@ server {
 # adduser --shell /bin/bash sites
 # su - sites
 
-$ curl -kL http://xrl.us/perlbrewinstall | bash
+$ curl -skL http://install.perlbrew.pl | bash
 $ . perl5/perlbrew/etc/bashrc
 $ cat >> .profile
 . ~/perl5/perlbrew/etc/bashrc
@@ -126,7 +126,7 @@ $ cpanm -L perl5lib Catalyst::Runtime Catalyst::Devel
 
 (deploy app)
 
-$ cpanm -L perl5libs --installdeps .
+$ cpanm -L perl5lib --installdeps .
 
 (modify init.d script)
 

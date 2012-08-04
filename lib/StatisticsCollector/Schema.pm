@@ -2,7 +2,7 @@ package StatisticsCollector::Schema;
 
 use base 'DBIx::Class::Schema';
 
-our $VERSION = 3;
+our $VERSION = 1;
 
 =head1 NAME
 

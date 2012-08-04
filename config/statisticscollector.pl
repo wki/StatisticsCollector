@@ -1,3 +1,6 @@
+#
+# main config file. additionally, we need a site-dependend suffix-config file.
+#
 {
     name => 'StatisticsCollector',
 
@@ -21,6 +24,11 @@
     'Controller::HTML::FormFu' => {
         model_stash => {
             schema => 'StatisticsCollector::Schema',
+        },
+        constructor => {
+            args => {
+                # plugins => ['FixFields'],
+            },
         },
     },
 }
