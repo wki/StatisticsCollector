@@ -10,3 +10,4 @@ dump/*.sql
 .carton/
 pm_to_blib
 local/
+.provision_lib/

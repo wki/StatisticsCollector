@@ -12,6 +12,7 @@ all_from 'lib/StatisticsCollector.pm';
 requires 'namespace::autoclean';
 requires 'Modern::Perl';
 requires 'Catalyst::Runtime' => '5.90003';
+requires 'Catalyst::Devel';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Action::RenderView';
