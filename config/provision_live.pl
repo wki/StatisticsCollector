@@ -33,12 +33,13 @@ Package 'build-essential';
 Package 'nginx';
 Package 'postgresql-9.1';
 Package 'postgresql-client-9.1';
-# Package 'postgresql-server-dev-9.1';
+Package 'postgresql-server-dev-9.1';
 
 Perlbrew {
     wanted        => '5.16.0',
     install_cpanm => 1,
-    tell          => 'perl_updated',
+    ### FIXME: what happens if we change perl version.
+    ### TODO: we must delete local-lib directory
 };
 
 Dir $WEB_DIR => {
@@ -48,7 +49,6 @@ Dir $WEB_DIR => {
 
 Dir $SITE_DIR => {
     mkdir => ['logs', 'pid'],
-    tell  => 'source_changed',
 };
 
 Dir $APP_DIR => {
@@ -60,13 +60,16 @@ Dir $APP_DIR => {
         "$STATIC/_css",
         "$STATIC/_js",
     ],
-    tell   => 'source_changed',
 };
+
+#### Idea:
+# Perl_Modules '/path/to/local' => {
+#     installdeps => '/path/to/app',
+# };
 
 ### FIXME: what can we do to ensure all modules are there?
 Execute install_cpan_modules => {
-    default_state => 'outdated',     ### bad fake.
-    listen => ['source_changed', 'perl_updated'],
+    default_state => 'outdated',     ### FIXME: need condition
     path   => Perlbrew->perl,
     cwd    => $APP_DIR,
     args   => [
@@ -94,8 +97,9 @@ foreach my $cache_entry (qw(css/site.css js/site.js)) {
     };
     
     File "$STATIC_DIR/_$cache_entry" => {
-        ### FIXME: need a failsave condition (mtime static/css/* > this)
-        listen  => 'source_changed',
+        ### FIXME: need condition (mtime static/css/* > this)
+        # Idea:
+        # when => FileNewer(<$STATIC_DIR/css/*.css>),
         content => Execute("cache_$cache_entry"),
     };
 }
@@ -106,12 +110,12 @@ foreach my $cache_entry (qw(css/site.css js/site.js)) {
 # };
 
 Service "\L$APP_NAME\E_plack" => {
-    listen  => ['source_changed', 'perl_updated'],
+    ### FIXME: need restart condition
     content => Template('service/starman', {
                 vars => {
                     name     => "\L$APP_NAME\E_starman",
                     app_dir  => $APP_DIR,
-                    starman  => Perlbrew->perl->dir->file('starman'),
+                    starman  => Perlbrew->bin('starman'),
                     port     => $INT_PORT,
                     pid      => "$SITE_DIR/pid/\L$APP_NAME\E.pid",
                     psgi     => "$APP_DIR/\L$APP_NAME\E.psgi",
@@ -133,11 +137,10 @@ File "/etc/nginx/sites-enabled/\L$APP_NAME\E" => {
                 }),
     user       => 'root',
     permission => '0777',
-    tell       => 'nginx_config_changed',
 };
 
 Service nginx => {
-    listen  => ['source_changed', 'perl_updated', 'nginx_config_changed'],
+    ### FIXME: need restart condition
 };
 
 Done;

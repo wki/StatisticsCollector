@@ -1,6 +1,8 @@
 Infos about deployment etc.
 ---------------------------
 
+-1) Testing:
+    CATALYST_CONFIG=config CATALYST_CONFIG_LOCAL_SUFFIX=test prove -l
 
 
 0) Web Host:      93.186.200.140

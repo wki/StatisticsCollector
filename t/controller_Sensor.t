@@ -8,7 +8,6 @@ use DateTime;
 use JSON;
 use YAML;
 
-BEGIN { $ENV{DSN} = 'dbi:Pg:dbname=statistics_test' }
 use Catalyst::Test 'StatisticsCollector';
 use StatisticsCollector::Controller::Sensor;
 
@@ -50,7 +49,7 @@ is Measure->count, 2, 'measures created';
 
 # default response format is JSON
 {
-    my $response = request(GET '/sensor/abc/def/ghi');
+    my $response = request GET '/sensor/abc/def/ghi';
     is $response->code, 200,
        'query with known sensor works';
     is $response->header('Content_Type'), 'application/json',

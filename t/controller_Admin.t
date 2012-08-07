@@ -2,8 +2,6 @@ use strict;
 use warnings;
 use Test::More;
 
-BEGIN { $ENV{DSN} = 'dbi:Pg:dbname=statistics_test' }
-
 use Catalyst::Test 'StatisticsCollector';
 use ok 'StatisticsCollector::Controller::Admin';
 
