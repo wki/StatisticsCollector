@@ -24,7 +24,6 @@ Idea for mbed microcontroller
    Header: Authorization: HMAC ID base_64_hmac
 
 
-
 3) Display : 2 x 16 Stellen
 
     1234567890ABCDEF
@@ -42,3 +41,22 @@ Idea for mbed microcontroller
     |  +-- < senden, > lesen, = fertig, ? fehler
     |
     +-- gerade/zuletzt gemessener Sensor
+
+
+4) Klassen
+
+
+Config -- Lesen der Konfigurations-Datei
+  char *host()
+  int port()
+  char *path()
+  void rewind_sensors()
+  SensorConfig *next_sensor()
+
+
+SensorConfig -- Konfig-Einstellung für einen Sensor
+  Sensor create_sensor()
+
+Sensor -- Basisklasse für alle Sensoren
+  Sensor(int pin, char *url_par, char *name)
+  
