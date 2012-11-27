@@ -1,0 +1,44 @@
+Idea for mbed microcontroller
+-----------------------------
+
+1) Config file on mbed Controller:
+   #
+   # host section <key> : <value>
+   #
+   host: kinkeldei-net.de
+   port: 81
+   path: /sensor/erlangen
+   id: mbed-42              # falls HMAC eingesetzt wird, sonst leer
+   secret: xxxx             # falls HMAC eingesetzt wird, sonst leer
+   
+   #
+   # sensor section <Kind><Pin> : <url_part> [ <display name> ]
+   #
+   T26: buero/temperatur    Buero
+   T27: aussen/temperatur   Aussen
+   S28: wasser/status       Wasser
+
+
+2) Digest::HMAC-SHA1 Authorization
+   Verb + Content-Type + Content-Length + Date + Id
+   Header: Authorization: HMAC ID base_64_hmac
+
+
+
+3) Display : 2 x 16 Stellen
+
+    1234567890ABCDEF
+   [Buero       52°C]
+   [T26> D xxx 11:42]
+    ^  ^ ^  ^    ^
+    |  | |  |    |
+    |  | |  |    |
+    |  | |  |    +-- Uhrzeit "hh:mm" / Datum "Mar03" / Uptime "  42d"
+    |  | |  |
+    |  | |  +-- Reserve
+    |  | |
+    |  | +-- Netz Init Dhcp Nslookup Time Post Ok Error
+    |  |
+    |  +-- < senden, > lesen, = fertig, ? fehler
+    |
+    +-- gerade/zuletzt gemessener Sensor

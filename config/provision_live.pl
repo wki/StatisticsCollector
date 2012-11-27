@@ -29,6 +29,11 @@ my $PERL5LIB_DIR    = "$APP_DIR/$PERL_LIB/lib/perl5";
 my $EXT_PORT        = 81;
 my $INT_PORT        = 5000;
 
+Defaults {
+    Dir  => { user => 'vagrant' },
+    File => { user => 'vagrant' },
+};
+
 Package 'build-essential';
 Package 'nginx';
 Package 'postgresql-9.1';
@@ -48,6 +53,7 @@ Dir $WEB_DIR => {
 };
 
 Dir $SITE_DIR => {
+    user  => 'vagrant',
     mkdir => ['logs', 'pid'],
 };
 
