@@ -12,6 +12,11 @@ Idea for mbed microcontroller
    secret: xxxx             # falls HMAC eingesetzt wird, sonst leer
    
    #
+   # ntp section
+   #
+   ntp: 1.2.3.4
+   
+   #
    # sensor section <Kind><Pin> : <url_part> [ <display name> ]
    #
    T26: buero/temperatur    Buero
@@ -28,15 +33,17 @@ Idea for mbed microcontroller
 
     1234567890ABCDEF
    [Buero       52°C]
-   [T26> D xxx 11:42]
-    ^  ^ ^  ^    ^
-    |  | |  |    |
-    |  | |  |    |
-    |  | |  |    +-- Uhrzeit "hh:mm" / Datum "Mar03" / Uptime "  42d"
-    |  | |  |
-    |  | |  +-- Reserve
+   [T26> D N x 11:42]
+    ^  ^ ^ ^ ^   ^
+    |  | | | |   |
+    |  | | | |   |
+    |  | | | |   +-- Uhrzeit "hh:mm" / Datum "Mar03" / Uptime "  42d"
+    |  | | | |
+    |  | | | +-- Reserve
+    |  | | |
+    |  | | +-- NTP Status: t=lesen, T=ok, ?=error
     |  | |
-    |  | +-- Netz Init Dhcp Nslookup Time Post Ok Error
+    |  | +-- Netz: Init Nslookup Post Ok Error 0-9 = in x Minuten gehts los
     |  |
     |  +-- < senden, > lesen, = fertig, ? fehler
     |
@@ -58,5 +65,5 @@ SensorConfig -- Konfig-Einstellung für einen Sensor
   Sensor create_sensor()
 
 Sensor -- Basisklasse für alle Sensoren
-  Sensor(int pin, char *url_par, char *name)
+  Sensor(int pin, char *url_part, char *name)
   
