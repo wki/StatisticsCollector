@@ -41,7 +41,7 @@ sub process {
     my $ticks = 9999;
     my $count = 0;
     while ($ticks > 10 && $count < 100) {
-        $y_max = int(($y_max + (9 * $delta )) / (10 * $delta)) * (10 * $delta);
+        $y_max = int(($y_max + (9 * $delta)) / (10 * $delta)) * (10 * $delta);
         $y_max = 10 if $y_max < 10;
 
         $y_min = int(($y_min - (9 * $delta)) / (10 * $delta)) * (10 * $delta);
