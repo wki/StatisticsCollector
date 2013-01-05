@@ -91,18 +91,13 @@
             ],
         },
         {
-            type => 'Text',
-            name => 'notify_email',
-            label => 'Notify Email',
-            # constraints => [ 'Required' ],
-            attributes => { class => 'input-string' },
-        },
-        {
-            type => 'Text',
-            name => 'notify_email',
-            label => 'Notify Email',
-            # constraints => [ 'Required' ],
-            attributes => { class => 'input-string' },
+            type => 'Select',
+            name => 'alarm_kind_id',
+            label => 'Alarm Kind',
+            model_config => {
+                resultset => 'AlarmKind',
+                label_column => 'name',
+            }
         },
         {
             type => 'Hidden',
