@@ -2,15 +2,7 @@
    "sets" : [
       {
          "quantity" : "all",
-         "class" : "Measure"
-      },
-      {
-         "quantity" : "all",
-         "class" : "AlarmCondition"
-      },
-      {
-         "quantity" : "all",
-         "class" : "LatestMeasure"
+         "class" : "Alarm"
       },
       {
          "quantity" : "all",
@@ -18,7 +10,23 @@
       },
       {
          "quantity" : "all",
+         "class" : "AlarmCondition"
+      },
+      {
+         "quantity" : "all",
          "class" : "Sensor"
+      },
+      {
+         "quantity" : "all",
+         "class" : "Measure"
+      },
+      {
+         "quantity" : "all",
+         "class" : "AlarmKind"
+      },
+      {
+         "quantity" : "all",
+         "class" : "LatestMeasure"
       }
    ],
    "might_have" : {
