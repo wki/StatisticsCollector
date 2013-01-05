@@ -27,9 +27,11 @@ CREATE TABLE "alarm_kind" (
   PRIMARY KEY ("alarm_kind_id")
 );
 
-insert into alarm_kind (name, kind, destination)
-    values ('Mail', 'Mail', 'wolfgang@kinkeldei.de'),
-           ('SMS',  'SMS',  '491729078944');
+insert into alarm_kind (alarm_kind_id, name, kind, destination)
+    values (1, 'Mail', 'Mail', 'wolfgang@kinkeldei.de'),
+           (2, 'SMS',  'SMS',  '491729078944');
+
+alter sequence alarm_kind_alarm_kind_id_seq restart with 3;
 
 ;
 ALTER TABLE "alarm" ADD CONSTRAINT "alarm_fk_alarm_condition_id" FOREIGN KEY ("alarm_condition_id")
@@ -40,7 +42,7 @@ ALTER TABLE "alarm" ADD CONSTRAINT "alarm_fk_sensor_id" FOREIGN KEY ("sensor_id"
   REFERENCES "sensor" ("sensor_id") DEFERRABLE;
 
 ;
-ALTER TABLE alarm_condition ADD COLUMN alarm_kind_id integer NOT NULL;
+ALTER TABLE alarm_condition ADD COLUMN alarm_kind_id integer NOT NULL default 1;
 
 ;
 ALTER TABLE sensor ADD COLUMN active boolean DEFAULT '1' NOT NULL;
