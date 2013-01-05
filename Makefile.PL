@@ -20,6 +20,7 @@ requires 'Catalyst::Action::REST';
 requires 'Moose';
 requires 'Config::General';
 requires 'DBIx::Class::DeploymentHandler';
+requires 'DBIx::Class::Migration';
 requires 'DBIx::Class::Candy';
 requires 'DBD::Pg';
 requires 'DateTime::Format::Pg';

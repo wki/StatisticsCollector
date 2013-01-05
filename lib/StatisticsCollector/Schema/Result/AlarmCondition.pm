@@ -180,15 +180,15 @@ column severity_level => {
     default_value => 2,
 };
 
-=head2 notify_email
+=head2 alarm_kind_id
 
-holds the person to get notified by mail.
+the kind of alarm
 
 =cut
 
-column notify_email => {
-    data_type => 'text',
-    is_nullable => 1,
+column alarm_kind_id => {
+    data_type => 'int',
+    is_nullable => 0,
 };
 
 =head2 specificity
@@ -219,6 +219,12 @@ column specificity => {
 =cut
 
 has_many alarms => 'StatisticsCollector::Schema::Result::Alarm', 'alarm_condition_id';
+
+=head2 alarm_kind
+
+=cut
+
+belongs_to alarm_kind => 'StatisticsCollector::Schema::Result::AlarmKind', 'alarm_kind_id';
 
 =head1 METHODS
 

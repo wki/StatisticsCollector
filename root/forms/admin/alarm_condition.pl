@@ -98,6 +98,13 @@
             attributes => { class => 'input-string' },
         },
         {
+            type => 'Text',
+            name => 'notify_email',
+            label => 'Notify Email',
+            # constraints => [ 'Required' ],
+            attributes => { class => 'input-string' },
+        },
+        {
             type => 'Hidden',
             name => 'submitted',
             value => 1,

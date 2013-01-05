@@ -1,0 +1,41 @@
+{
+   "sets" : [
+      {
+         "quantity" : "all",
+         "class" : "Alarm"
+      },
+      {
+         "quantity" : "all",
+         "class" : "AggregateMeasure"
+      },
+      {
+         "quantity" : "all",
+         "class" : "AlarmCondition"
+      },
+      {
+         "quantity" : "all",
+         "class" : "Sensor"
+      },
+      {
+         "quantity" : "all",
+         "class" : "Measure"
+      },
+      {
+         "quantity" : "all",
+         "class" : "AlarmKind"
+      },
+      {
+         "quantity" : "all",
+         "class" : "LatestMeasure"
+      }
+   ],
+   "might_have" : {
+      "fetch" : 0
+   },
+   "belongs_to" : {
+      "fetch" : 0
+   },
+   "has_many" : {
+      "fetch" : 0
+   }
+}
