@@ -1,0 +1,25 @@
+DB Migration HowTo
+
+1) initiales Bauen der Struktur
+
+    $ easy migration prepare
+
+2) Status-Abfrage
+
+    $ easy migration status
+
+3) Tabellen in leere aber vorhandene DB anlegen
+
+    $ easy migration install
+
+4) Ausführen einer DB Änderung
+
+    ändern der Schema-Dateien
+    $StatisticsCollector::Schema::VERSION += 1
+    
+    $ easy migration prepare
+
+5) Anwenden von Änderungen auf einer DB
+
+    $easy migration upgrade
+

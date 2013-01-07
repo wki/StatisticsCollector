@@ -1,0 +1,559 @@
+---
+schema:
+  procedures: {}
+  tables:
+    dbix_class_deploymenthandler_versions:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - version
+          match_type: ''
+          name: dbix_class_deploymenthandler_versions_version
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+      fields:
+        ddl:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: ddl
+          order: 3
+          size:
+            - 0
+        id:
+          data_type: int
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 0
+        upgrade_sql:
+          data_type: text
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: upgrade_sql
+          order: 4
+          size:
+            - 0
+        version:
+          data_type: varchar
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: version
+          order: 2
+          size:
+            - 50
+      indices: []
+      name: dbix_class_deploymenthandler_versions
+      options: []
+      order: 1
+  triggers: {}
+  views: {}
+translator:
+  add_drop_table: 0
+  filename: ~
+  no_comments: 0
+  parser_args:
+    DBIx::Class::Schema: ~
+    DBIx::Schema: ~
+    package: &1 !!perl/hash:StatisticsCollector::Schema
+      class_mappings:
+        DBIx::Class::DeploymentHandler::VersionStorage::Standard::VersionResult: __VERSION
+        StatisticsCollector::Model::DB::AggregateMeasure: AggregateMeasure
+        StatisticsCollector::Model::DB::AlarmCondition: AlarmCondition
+        StatisticsCollector::Model::DB::LatestMeasure: LatestMeasure
+        StatisticsCollector::Model::DB::Measure: Measure
+        StatisticsCollector::Model::DB::Sensor: Sensor
+        StatisticsCollector::Schema::Result::AggregateMeasure: AggregateMeasure
+        StatisticsCollector::Schema::Result::AlarmCondition: AlarmCondition
+        StatisticsCollector::Schema::Result::LatestMeasure: LatestMeasure
+        StatisticsCollector::Schema::Result::Measure: Measure
+        StatisticsCollector::Schema::Result::Sensor: Sensor
+      source_registrations:
+        AggregateMeasure: !!perl/hash:DBIx::Class::ResultSource::View
+          _columns:
+            ending_at:
+              _ic_dt_method: datetime
+              _inflate_info:
+                deflate: !!perl/code '{ "DUMMY" }'
+                inflate: !!perl/code '{ "DUMMY" }'
+              data_type: datetime
+              timezone: local
+            max_value:
+              data_type: int
+              is_nullable: 0
+            min_value:
+              data_type: int
+              is_nullable: 0
+            nr_values:
+              data_type: int
+              is_nullable: 0
+            starting_at:
+              _ic_dt_method: datetime
+              _inflate_info:
+                deflate: !!perl/code '{ "DUMMY" }'
+                inflate: !!perl/code '{ "DUMMY" }'
+              data_type: datetime
+              timezone: local
+            sum_value:
+              data_type: int
+              is_nullable: 0
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - starting_at
+            - ending_at
+            - min_value
+            - max_value
+            - sum_value
+            - nr_values
+          _relationships: {}
+          deploy_depends_on: {}
+          is_virtual: 1
+          name: virtual_aggregate_measure
+          result_class: StatisticsCollector::Model::DB::AggregateMeasure
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: AggregateMeasure
+          view_definition: |2
+            
+            select range.*,
+                   min(m.min_value) as min_value,
+                   max(m.max_value) as max_value,
+                   sum(m.sum_value) as sum_value,
+                   coalesce(sum(m.nr_values), 0) as nr_values
+            
+            from ( /* mid */
+                   select date_trunc(x.unit, now()) - ('1' || x.unit)::interval * (x.i-1) as starting_at,
+                          date_trunc(x.unit, now()) - ('1' || x.unit)::interval * (x.i-2) as ending_at
+                         
+                   from (/* inner */ select ?::text as unit, generate_series(1,?) as i) x
+                 ) range
+                 left join measure m on (m.starting_at   >= range.starting_at
+                                         and m.ending_at <= range.ending_at
+                                         and m.sensor_id = ?)
+            group by range.starting_at, range.ending_at
+            order by range.starting_at
+        AlarmCondition: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            alarm_condition_id:
+              data_type: int
+              is_auto_increment: 1
+            latest_value_gt:
+              data_type: int
+              is_nullable: 1
+            latest_value_lt:
+              data_type: int
+              is_nullable: 1
+            max_measure_age_minutes:
+              data_type: int
+              is_nullable: 1
+            max_value_lt:
+              data_type: int
+              is_nullable: 1
+            min_value_gt:
+              data_type: int
+              is_nullable: 1
+            name:
+              data_type: text
+              is_nullable: 1
+            sensor_mask:
+              data_type: text
+              is_nullable: 0
+            severity_level:
+              data_type: int
+              default_value: 2
+              is_nullable: 0
+            specificity:
+              data_type: int
+              default_value: 0
+              dynamic_default_on_create: &2 !!perl/code '{ "DUMMY" }'
+              dynamic_default_on_update: *2
+              is_nullable: 0
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - alarm_condition_id
+            - name
+            - sensor_mask
+            - max_measure_age_minutes
+            - latest_value_gt
+            - latest_value_lt
+            - min_value_gt
+            - max_value_lt
+            - severity_level
+            - specificity
+          _primaries: &3
+            - alarm_condition_id
+          _relationships: {}
+          _unique_constraints:
+            primary: *3
+          name: alarm_condition
+          result_class: StatisticsCollector::Model::DB::AlarmCondition
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: AlarmCondition
+        LatestMeasure: !!perl/hash:DBIx::Class::ResultSource::View
+          _columns:
+            ending_at: &4
+              _ic_dt_method: timestamp
+              _inflate_info:
+                deflate: !!perl/code '{ "DUMMY" }'
+                inflate: !!perl/code '{ "DUMMY" }'
+              data_type: timestamp
+              is_nullable: 0
+              timezone: local
+            latest_value: &5
+              data_type: int
+              is_nullable: 0
+            latest_value_gt_alarm:
+              data_type: boolean
+            latest_value_lt_alarm:
+              data_type: boolean
+            max_severity_level:
+              data_type: int
+            max_value: &6
+              data_type: int
+              is_nullable: 0
+            max_value_lt_alarm:
+              data_type: boolean
+            measure_age_alarm:
+              data_type: boolean
+            measure_id: &7
+              data_type: int
+              is_auto_increment: 1
+            min_value: &8
+              data_type: int
+              is_nullable: 0
+            min_value_gt_alarm:
+              data_type: boolean
+            nr_matching_alarm_conditions:
+              data_type: int
+            nr_values: &9
+              data_type: int
+              is_nullable: 0
+            sensor_id: &10
+              data_type: int
+              is_nullable: 0
+            starting_at: &11
+              _ic_dt_method: datetime
+              _inflate_info:
+                deflate: !!perl/code '{ "DUMMY" }'
+                inflate: !!perl/code '{ "DUMMY" }'
+              data_type: datetime
+              is_nullable: 0
+              timezone: local
+            sum_value: &12
+              data_type: int
+              is_nullable: 0
+            updated_at: &13
+              _ic_dt_method: datetime
+              _inflate_info:
+                deflate: !!perl/code '{ "DUMMY" }'
+                inflate: !!perl/code '{ "DUMMY" }'
+              data_type: datetime
+              dynamic_default_on_create: get_timestamp
+              dynamic_default_on_update: get_timestamp
+              is_nullable: 0
+              timezone: local
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - measure_id
+            - sensor_id
+            - latest_value
+            - min_value
+            - max_value
+            - sum_value
+            - nr_values
+            - starting_at
+            - updated_at
+            - ending_at
+            - measure_age_alarm
+            - latest_value_gt_alarm
+            - latest_value_lt_alarm
+            - min_value_gt_alarm
+            - max_value_lt_alarm
+            - nr_matching_alarm_conditions
+            - max_severity_level
+          _primaries: &14
+            - measure_id
+          _relationships:
+            sensor:
+              attrs:
+                accessor: single
+                fk_columns:
+                  sensor_id: 1
+                is_foreign_key_constraint: 1
+                undef_on_null_fk: 1
+              class: StatisticsCollector::Schema::Result::Sensor
+              cond:
+                foreign.sensor_id: self.sensor_id
+              source: StatisticsCollector::Schema::Result::Sensor
+          _unique_constraints: &15
+            primary: *14
+          deploy_depends_on: {}
+          is_virtual: 1
+          name: virtual_latest_measure
+          result_class: StatisticsCollector::Model::DB::LatestMeasure
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: LatestMeasure
+          view_definition: |2
+            
+                select sm.sensor_id,
+                       m.*
+                from (select sensor_id, max(measure_id) as latest_measure_id
+                      from measure
+                      group by sensor_id) sm
+                     left join (select m.measure_id,
+                                       /* use of aggregate functions needed here */
+                                       min(distinct m.latest_value) as latest_value,
+                                       min(distinct m.min_value)    as min_value,
+                                       max(distinct m.max_value)    as max_value,
+                                       min(distinct m.sum_value)    as sum_value,
+                                       max(distinct m.nr_values)    as nr_values,
+                                       min(distinct m.starting_at)  as starting_at,
+                                       max(distinct m.updated_at)   as updated_at,
+                                       max(distinct m.ending_at)    as ending_at,
+                                       
+                                       /* aggregate alarm conditions */
+                                       sum(case when ac.max_measure_age_minutes is not null
+                                                     and age(now(), m.updated_at) > (interval '1 minute') * ac.max_measure_age_minutes
+                                                    then 1
+                                                    else 0 end) > 0 as measure_age_alarm,
+                                       
+                                       sum(case when ac.latest_value_gt is not null
+                                                     and m.latest_value <= ac.latest_value_gt
+                                                    then 1
+                                                    else 0 end) > 0 as latest_value_gt_alarm,
+                                       sum(case when ac.latest_value_lt is not null
+                                                     and m.latest_value >= ac.latest_value_lt
+                                                    then 1
+                                                    else 0 end) > 0 as latest_value_lt_alarm,
+                                       
+                                       sum(case when ac.min_value_gt is not null
+                                                     and m.min_value <= ac.min_value_gt
+                                                    then 1
+                                                    else 0 end) > 0 as min_value_gt_alarm,
+                                       sum(case when ac.max_value_lt is not null
+                                                     and m.max_value >= ac.max_value_lt
+                                                    then 1
+                                                    else 0 end) > 0 as max_value_lt_alarm,
+                                       
+                                       max(case when (ac.max_measure_age_minutes is not null
+                                                      and age(now(), m.updated_at) > (interval '1 minute') * ac.max_measure_age_minutes)
+                                                  or (ac.latest_value_gt is not null
+                                                      and m.latest_value <= ac.latest_value_gt)
+                                                  or (ac.latest_value_lt is not null
+                                                     and m.latest_value >= ac.latest_value_lt)
+                                                  or (ac.min_value_gt is not null
+                                                      and m.min_value <= ac.min_value_gt)
+                                                  or (ac.max_value_lt is not null
+                                                     and m.max_value >= ac.max_value_lt)
+                                                    then ac.severity_level
+                                                    else null end) as max_severity_level,
+                                       count(distinct ac.alarm_condition_id) as nr_matching_alarm_conditions
+                                from measure m
+                                     join sensor s on (m.sensor_id = s.sensor_id)
+                                     -- left join alarm_condition ac on (s.name like ac.sensor_mask)
+                                     left join (select x.*
+                                                from (select s.sensor_id,
+                                                             ac.*,
+                                                             first_value(ac.alarm_condition_id) over w best_alarm_condition_id
+                                                      from sensor s 
+                                                           join alarm_condition ac on (s.name like ac.sensor_mask)
+                                                      window w as (partition by s.sensor_id, ac.severity_level 
+                                                                   order by ac.severity_level desc, ac.specificity desc)
+                                                     ) x
+                                                where x.alarm_condition_id = x.best_alarm_condition_id
+                                               ) ac on ac.sensor_id = s.sensor_id
+                                group by m.measure_id
+                               ) m on (sm.latest_measure_id = m.measure_id)
+        Measure: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            ending_at: *4
+            latest_value: *5
+            max_value: *6
+            measure_id: *7
+            min_value: *8
+            nr_values: *9
+            sensor_id: *10
+            starting_at: *11
+            sum_value: *12
+            updated_at: *13
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - measure_id
+            - sensor_id
+            - latest_value
+            - min_value
+            - max_value
+            - sum_value
+            - nr_values
+            - starting_at
+            - updated_at
+            - ending_at
+          _primaries: *14
+          _relationships:
+            sensor:
+              attrs:
+                accessor: single
+                fk_columns:
+                  sensor_id: 1
+                is_foreign_key_constraint: 1
+                undef_on_null_fk: 1
+              class: StatisticsCollector::Schema::Result::Sensor
+              cond:
+                foreign.sensor_id: self.sensor_id
+              source: StatisticsCollector::Schema::Result::Sensor
+          _unique_constraints: *15
+          name: measure
+          result_class: StatisticsCollector::Model::DB::Measure
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: Measure
+        Sensor: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            name:
+              data_type: text
+              default_value: ''
+              is_nullable: 0
+            sensor_id:
+              data_type: int
+              is_auto_increment: 1
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - sensor_id
+            - name
+          _primaries: &16
+            - sensor_id
+          _relationships:
+            latest_measure:
+              attrs:
+                accessor: single
+                cascade_delete: 1
+                cascade_update: 1
+                join_type: LEFT
+              class: StatisticsCollector::Schema::Result::LatestMeasure
+              cond:
+                foreign.sensor_id: self.sensor_id
+              source: StatisticsCollector::Schema::Result::LatestMeasure
+            measures:
+              attrs:
+                accessor: multi
+                cascade_copy: 1
+                cascade_delete: 1
+                join_type: LEFT
+              class: StatisticsCollector::Schema::Result::Measure
+              cond:
+                foreign.sensor_id: self.sensor_id
+              source: StatisticsCollector::Schema::Result::Measure
+          _unique_constraints:
+            primary: *16
+            sensor_name:
+              - name
+          name: sensor
+          result_class: StatisticsCollector::Model::DB::Sensor
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: Sensor
+        __VERSION: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            ddl:
+              data_type: text
+              is_nullable: 1
+            id:
+              data_type: int
+              is_auto_increment: 1
+            upgrade_sql:
+              data_type: text
+              is_nullable: 1
+            version:
+              data_type: varchar
+              size: 50
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - id
+            - version
+            - ddl
+            - upgrade_sql
+          _primaries: &17
+            - id
+          _relationships: {}
+          _unique_constraints:
+            dbix_class_deploymenthandler_versions_version:
+              - version
+            primary: *17
+          name: dbix_class_deploymenthandler_versions
+          result_class: DBIx::Class::DeploymentHandler::VersionStorage::Standard::VersionResult
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::DeploymentHandler::VersionStorage::Standard::VersionResultSet
+          schema: *1
+          source_name: __VERSION
+      storage: !!perl/hash:DBIx::Class::Storage::DBI::Pg
+        _conn_pid: 63431
+        _connect_info:
+          - dsn: dbi:Pg:dbname=statistics
+            password: ''
+            pg_enable_utf8: 1
+            user: postgres
+        _dbh: !!perl/hash:DBI::db {}
+        _dbh_autocommit: 1
+        _dbh_details: {}
+        _dbh_gen: 0
+        _dbi_connect_info:
+          - dbi:Pg:dbname=statistics
+          - postgres
+          - ''
+          - &18
+            AutoCommit: 1
+            PrintError: 0
+            RaiseError: 1
+            ShowErrorStatement: 1
+            pg_enable_utf8: 1
+        _dbic_connect_attributes: *18
+        _driver_determined: 1
+        _in_do_block: 0
+        _sql_maker: ~
+        _sql_maker_opts: {}
+        savepoints: []
+        schema: *1
+        transaction_depth: 0
+    sources:
+      - __VERSION
+  parser_type: SQL::Translator::Parser::DBIx::Class
+  producer_args: {}
+  producer_type: SQL::Translator::Producer::YAML
+  show_warnings: 0
+  trace: 0
+  version: 0.11016

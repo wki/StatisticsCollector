@@ -26,9 +26,9 @@
             schema => 'StatisticsCollector::Schema',
         },
         constructor => {
-            args => {
-                # plugins => ['FixFields'],
-            },
+            # args => {
+            #     # plugins => ['FixFields'],
+            # },
         },
     },
 }
