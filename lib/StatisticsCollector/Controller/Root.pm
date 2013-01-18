@@ -74,6 +74,7 @@ just some debugging messages
 sub debug_page :Local {
     my ($self, $c) = @_;
     
+    my $x = $c->model('Logic::Measurement');
     
     my @messages;
     if ($c->can('session')) {
@@ -107,7 +108,7 @@ sub end : ActionClass('RenderView') {}
 
 =head2 save_measures
 
-a simple and currently hard coded getter for measures.
+a simple and currently hard coded setter for measures.
 
 Receives all measures of a single arduino board as name/value pairs.
 Temperatures of -99 indicate missing values.
@@ -121,11 +122,8 @@ sub save_measures :Global {
         my $value = $c->req->params->{$name};
         next if $value < -50;
         
-        my $sensor = $c->model('DB::Sensor')
-                       ->find_or_create({name => "erlangen/\L$name\E/temperatur"})
-            or next;
-        
-        $sensor->add_measure($value);
+        $c->model('Logic::Measurement')
+          ->save_measure("erlangen/\L$name\E/temperatur", $value);
     }
     $c->response->body('OK');
 }

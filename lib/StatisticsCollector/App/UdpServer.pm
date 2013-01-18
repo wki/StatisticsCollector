@@ -3,6 +3,7 @@ use Modern::Perl;
 use Moose;
 use IO::Socket::INET;
 use Try::Tiny;
+use StatisticsCollector::Logic::Measurement;
 
 extends 'StatisticsCollector::App';
 with 'StatisticsCollector::Role::Schema';
@@ -41,6 +42,20 @@ has port => (
     documentation => "Port to bind [$DEFAULT_PORT]",
 );
 
+has measurement => (
+    is         => 'ro',
+    isa        => 'StatisticsCollector::Logic::Measurement',
+    lazy_build => 1,
+);
+
+sub _build_measurement {
+    my $self = shift;
+    
+    return StatisticsCollector::Logic::Measurement->new(
+        schema => $self->schema,
+    );
+}
+
 =head1 METHODS
 
 =cut
@@ -72,9 +87,7 @@ sub run {
         }
         
         try {
-            $self->resultset('Sensor')
-                 ->find_or_create( { name => $sensor_name } )
-                 ->add_measure( $value // 0 );
+            $self->measurement->save_measure($sensor_name, $value);
         } catch {
             warn "Error adding a measure, sensor '$sensor_name' ($_)";
         };

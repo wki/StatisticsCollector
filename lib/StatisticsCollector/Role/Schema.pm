@@ -2,7 +2,7 @@ package StatisticsCollector::Role::Schema;
 
 use Moose::Role;
 use StatisticsCollector::Schema;
-with 'MooseX::Getopt';
+with 'MooseX::Getopt::Strict';
 
 =head1 NAME
 
@@ -43,7 +43,6 @@ has dsn => (
     is => 'ro',
     isa => 'Str',
     default => 'dbi:Pg:dbname=statistics',
-    lazy => 1,
     documentation => 'the Data Source Name (dsn) needed to connect to the database',
 );
 
@@ -58,7 +57,6 @@ has username => (
     is => 'ro',
     isa => 'Str',
     default => 'postgres',
-    lazy => 1,
     cmd_aliases => ['U'],
     documentation => 'the user name needed to connect to the database',
 );
@@ -74,7 +72,6 @@ has password => (
     is => 'ro',
     isa => 'Str',
     default => '',
-    lazy => 1,
     cmd_aliases => ['P'],
     documentation => 'the password needed to connect to the database',
 );
@@ -86,14 +83,12 @@ the db schema after a successful connect
 =cut
 
 has schema => (
-    traits => ['NoGetopt'],
     is => 'ro',
     isa => 'StatisticsCollector::Schema',
-    lazy => 1,
-    builder => '_connect_to_db',
+    lazy_build => 1,
 );
 
-sub _connect_to_db {
+sub _build_schema {
     my $self = shift;
     
     return StatisticsCollector::Schema->connect($self->dsn, $self->username, $self->password);

@@ -1,5 +1,6 @@
 package StatisticsCollector::Controller::Sensor;
 use Moose;
+use Try::Tiny;
 use namespace::autoclean;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
@@ -59,54 +60,54 @@ sub default :Path :Args() :ActionClass('REST') {
 
 =head2 default_GET
 
-http method GET: retrieve the last measure of a sensor
+http method GET: retrieve the latest measure of a sensor
 
 =cut
 
 sub default_GET {
     my ($self, $c, @path) = @_;
     
-    if (my $sensor = $c->model('DB::Sensor')
-                            ->find(
-                                { name => join('/', @path)},
-                                { prefetch => 'latest_measure' }) ) {
-        if ($sensor->latest_measure) {
+    my $name = join '/', @path;
+    
+    try {
+        my $measure =
+            $c->model('Logic::Measurement')
+              ->get_latest_measure($name);
+        
+        if ($measure) {
             $self->status_ok(
                 $c,
                 entity => {
-                    map { $_ => $sensor->latest_measure->$_() }
+                    map { $_ => $measure->$_() }
                     qw(latest_value min_value max_value sum_value nr_values)
                 },
             );
         } else {
             $self->status_no_content($c);
         }
-    } else {
+    } catch {
         $self->status_not_found(
             $c,
-            message => 'no sensor given',
+            message => "Sensor '$name' not found",
         );
-    }
+    };
 }
 
 =head2 default_POST
 
-http method POST: deliver a new measurement to a sensor
+http method POST: save a new measurement for a sensor
 
 =cut
 
 sub default_POST {
     my ($self, $c, @path) = @_;
     
-    my $sensor = $c->model('DB::Sensor')
-                   ->find_or_create({name => join('/', @path)});
-    if (!$sensor) {
-        $self->status_bad_request(
-            $c,
-            message => 'Sensor not found',
-        );
-    } else {
-        my $measure = $sensor->add_measure($c->req->params->{value});
+    my $name = join '/', @path;
+    try {
+        my $measure =
+            $c->model('Logic::Measurement')
+              ->save_measure($name, $c->req->params->{value});
+
         $self->status_created(
             $c,
             location => $c->req->uri->as_string,
@@ -115,7 +116,12 @@ sub default_POST {
                 qw(sensor_id measure_id min_value max_value latest_value nr_values)
             },
         );
-    }
+    } catch {
+        $self->status_bad_request(
+            $c,
+            message => "Sensor '$name' not found",
+        );
+    };
 }
 
 __PACKAGE__->meta->make_immutable;
