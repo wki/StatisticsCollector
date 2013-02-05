@@ -25,6 +25,14 @@ case of unwanted values or lack of measures.
   $sensor->latest_measure->xxx_alarm
   $sensor->latest_measure->has_alarm
 
+* alternative display to dashboard for mobile device
+
+  +-----------------------------------+
+  | [ erlangen v ]  [ temperature v ] |
+  | +-------------------------------+ |
+  | | 18:51      Aussen          15 | |
+  | | 18:51      Waschkueche     10 | |
+  ...
 
 ## Ideas for URIs ##
 
