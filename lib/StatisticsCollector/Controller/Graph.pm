@@ -213,7 +213,9 @@ sub construct_graph :Private {
     $y_max //= max _values_of(@data);
 
     $c->stash(
-        title    => sprintf('%s (%s)', $sensor->name, $sensor->default_graph_type),
+        title    => sprintf('%s / %s / %s   (%s)', 
+                            (split '/', $sensor->name),
+                            $sensor->default_graph_type),
         width    => 600,
         height   => 400,
         data     => \@data,

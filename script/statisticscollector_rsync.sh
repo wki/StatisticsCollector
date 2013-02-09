@@ -10,12 +10,13 @@ easy test /js/site.js   > root/_static/js/site.js
 
 # transfer files to server
 rsync -vcr  --delete \
-  --exclude perl5lib \
-  --exclude blib --exclude inc --exclude '.git*' \
-  --exclude 'META.*' --exclude 'MYMETA.*' --exclude .DS_Store \
-  --exclude Makefile \
-  --exclude script/dbicdh \
-  --exclude dump \
-  --exclude Changes --exclude 'README.*' --exclude 'INFO.*' \
+  --exclude /perl5lib \
+  --exclude /blib --exclude /inc --exclude '/.git*' \
+  --exclude '/META.*' --exclude '/MYMETA.*' --exclude .DS_Store \
+  --exclude /Makefile \
+  --exclude /script/dbicdh \
+  --exclude /dump \
+  --exclude /run \
+  --exclude /Changes --exclude '/README.*' --exclude '/INFO.*' \
   . sites@myloc:$dstdir/ $*
 

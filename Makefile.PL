@@ -30,13 +30,14 @@ requires 'Catalyst::Model::DBIC::Schema';
 requires 'HTML::FormFu';
 requires 'Catalyst::Controller::HTML::FormFu';
 requires 'HTML::FormFu::Model::DBIC';
+requries 'MooseX::NonMoose';
 
 # scripts need
 requires 'MooseX::Getopt';
 requires 'MooseX::Types';
 
 # graph generation
-requires 'Imager';
+requires 'Imager';         # requires freetype, giflib, libpng, jpeg
 requires 'Imager::Graph';
 
 # for CSS generation

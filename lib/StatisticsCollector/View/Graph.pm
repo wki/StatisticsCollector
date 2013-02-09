@@ -1,8 +1,7 @@
 package StatisticsCollector::View::Graph;
 use Moose;
 use Imager::Graph::StackedColumn;
-
-# use Imager::Font;
+use Imager::Font;
 
 use namespace::autoclean;
 
@@ -30,7 +29,7 @@ sub process {
     my ( $self, $c ) = @_;
 
     my $font = Imager::Font->new(file => '/Library/Fonts/Arial.ttf')
-        or die "Error: $!";
+        or die "Imager Error: $!";
 
     my $graph = Imager::Graph::StackedColumn->new();
 
@@ -70,8 +69,9 @@ sub process {
     $graph->set_y_max($y_max);
     $graph->set_y_min($y_min);
     $graph->set_y_tics($ticks);
-    $graph->set_image_width($c->stash->{width}  // 600);
-    $graph->set_image_height($c->stash->{height}  // 400);
+    $graph->set_image_width($c->stash->{width}   // 600);
+    $graph->set_image_height($c->stash->{height} // 400);
+    $graph->set_title_font_size(24);
 
     my $img = $graph->draw(
         features       => [ 'horizontal_gridlines', 'areamarkers' ],
@@ -82,8 +82,19 @@ sub process {
         hgrid          => { style => "dashed", color => "#888" },
         graph          => { outline => { color => "#F00", style => "dotted" }, },
         fills          => [
-            qw(60ff60 a0a0ff),
+            #  red:max  blue:min (was green: 60ff60)
+            qw(ffb0b0   b0b0ff),
         ],
+        
+        # changed from defaults of fount_lin
+        back           => {
+            fountain => 'linear',
+            xa_ratio => 0.0, ya_ratio => 0.0,
+            xb_ratio => 0.0, yb_ratio => 1.0,
+            segments => Imager::Fountain->simple( 
+                positions => [0, 1],
+                colors => [ 'c0c0ff', 'e0e0FF' ])
+        },
     ) or die $graph->error;
 
     my $data;

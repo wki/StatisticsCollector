@@ -118,24 +118,26 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 #   - outer        generates the aggregates wanted
 #
 __PACKAGE__->result_source_instance->view_definition(q{
-select s.sensor_id,
+select m.sensor_id,
        range.*,
        min(m.min_value) as min_value,
        max(m.max_value) as max_value,
        sum(m.sum_value) as sum_value,
        coalesce(sum(m.nr_values), 0) as nr_values
 
-from ( /* mid */
-       select date_trunc(x.unit, now()) - ('1' || x.unit)::interval * (x.i-1) as starting_at,
-              date_trunc(x.unit, now()) - ('1' || x.unit)::interval * (x.i-2) as ending_at
+from ( /* range: starting_at, ending_at */
+       select date_trunc(u.unit, now()) - ('1' || u.unit)::interval * (u.i-1) as starting_at,
+              date_trunc(u.unit, now()) - ('1' || u.unit)::interval * (u.i-2) as ending_at
              
-       from (/* inner */ select ?::text as unit, generate_series(1,?) as i) x
+       from (
+           /* u: unit, i */ 
+           select ?::text as unit, generate_series(1,?)::integer as i
+       ) u
      ) range
-     left join (values (?::integer)) s(sensor_id)
      left join measure m on (m.starting_at   >= range.starting_at
                              and m.ending_at <= range.ending_at
-                             and m.sensor_id = s.sensor_id)
-group by s.sensor_id, range.starting_at, range.ending_at
+                             and m.sensor_id = ?)
+group by m.sensor_id, range.starting_at, range.ending_at
 order by range.starting_at
 });
 

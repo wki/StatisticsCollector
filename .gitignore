@@ -11,3 +11,4 @@ dump/*.sql
 pm_to_blib
 local/
 .provision_lib/
+script/run/

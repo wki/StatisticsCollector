@@ -7,11 +7,11 @@ has schema => (
     required => 1,
 );
 
-# sub BUILD {
-#     my $self = shift;
-#     
-#     warn "Measurement::BUILD running, schema = ${\$self->schema}";
-# }
+sub BUILD {
+    my $self = shift;
+    
+    warn "Measurement::BUILD running, self=$self, schema=${\$self->schema}";
+}
 
 sub get_latest_measure {
     my ($self, $name) = @_;

@@ -75,6 +75,7 @@ sub debug_page :Local {
     my ($self, $c) = @_;
     
     my $x = $c->model('Logic::Measurement');
+    my $y = $c->model('Logic::Measurement');
     
     my @messages;
     if ($c->can('session')) {
