@@ -93,9 +93,9 @@ Copyright (C) 2011, WKI
 
 .graph_container .image {
     position: absolute;
-    margin-left: -600px;
-    width: 600px;
-    height: 400px;
+    margin-left: -400px;
+    width: 400px;
+    height: 300px;
     display: none;
     border-radius: 6px;
     -webkit-box-shadow: 0px 1px 6px #000000;

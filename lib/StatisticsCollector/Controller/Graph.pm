@@ -197,8 +197,9 @@ sub construct_graph :Private {
 
     my (@data, $y_min, $y_max);
     if ($sensor->default_graph_type eq 'range') {
-        push @data, [ \@dif, 'max' ];
+        # push @data, [ \@max, 'max' ];
         push @data, [ \@min, 'min' ];
+        push @data, [ \@dif, 'max' ];
         $y_min = min @min;
         $y_max = max @max;
     } elsif ($sensor->default_graph_type eq 'count') {
