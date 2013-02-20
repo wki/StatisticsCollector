@@ -7,10 +7,29 @@ use lib "$FindBin::Bin/../lib";
 use StatisticsCollector::Schema;
 use DateTime;
 use POSIX 'strftime';
+use Data::Dumper; $Data::Dumper::Maxdepth = 2; $Data::Dumper::Sortkeys = 1;
 
 my $FORMAT = '%Y-%m-%d %H:%M:%S %z (%Z)';
 
 my $schema = StatisticsCollector::Schema->connect('dbi:Pg:dbname=statistics', 'postgres', '');
+
+my $rs = $schema->resultset('TestMe');
+
+$rs->result_source->something('some more thing');
+
+say 'ref($rs) = ' . ref $rs;
+say 'isa($rs) = ' . join(', ', @StatisticsCollector::Schema::ResultSet::ISA);
+say "ref(${\$rs->result_source}) = " . ref $rs->result_source;
+say 'FROM = ' . ${$rs->result_source->from};
+
+my $x = $rs->first;
+$x = $schema->resultset('TestMe')->first;
+$x = $schema->resultset('TestMe')->first;
+# my $x = $rs->search(undef, { bind => ['hour', 24, 33] })->first;
+
+# say Data::Dumper->Dump([$rs->result_source], ['result_source']);
+
+__END__
 
 my $sensor = $schema->resultset('Sensor')->find(26);
 

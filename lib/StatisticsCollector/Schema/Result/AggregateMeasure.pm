@@ -141,6 +141,25 @@ group by m.sensor_id, range.starting_at, range.ending_at
 order by range.starting_at
 });
 
+# testing only
+
+sub view_definition {
+    my $self = shift;
+    
+    warn 'VIEW_DEFINITION $self = ' . $self;
+    
+    return 'asdf';
+}
+
+sub from {
+    my $self = shift;
+    
+    # warn 'FROM $self = ' . $self;
+    
+    return \'42';
+    # return 'true';
+}
+
 1;
 
 =head1 AUTHOR
