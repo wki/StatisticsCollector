@@ -25,6 +25,7 @@ show a form that allows editing an alarm condition record
 
 =cut
 
+# sub index :Path :Args(1) :FormConfig('admin/alarm_condition') {
 sub index :Path :Args(1) :FormConfig('admin/alarm_condition') {
     my ( $self, $c, $alarm_condition_id ) = @_;
 

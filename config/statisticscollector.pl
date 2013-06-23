@@ -4,6 +4,9 @@
 {
     name => 'StatisticsCollector',
 
+    # requires Catalyst 5.9004 and above or P::Unicode::Encoding
+    encoding => 'UTF-8',
+
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
     
@@ -23,7 +26,7 @@
     
     'Controller::HTML::FormFu' => {
         model_stash => {
-            schema => 'StatisticsCollector::Schema',
+            schema => 'DB',
         },
         constructor => {
             # args => {
